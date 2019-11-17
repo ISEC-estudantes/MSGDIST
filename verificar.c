@@ -58,6 +58,7 @@ int verificamsg ( int pipein, int pipeout, char * msg )
   char envia[sizeofall] ;
   strcpy ( envia, msg );
   strcat ( envia, " ##MSGEND## \n" );
+  //ading content
 
   //escreve na pipe para enviar informação ao verificador
   write ( pipein, envia, strlen ( envia ) );
