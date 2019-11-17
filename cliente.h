@@ -17,9 +17,6 @@ struct _client
 
   //id do cliente
   int pid;
-  
-  //ponteiro para o user que abrio o cliente
-  user * conta;
 
   //cliente anterior
   cliente * ant;

@@ -1,0 +1,5 @@
+*.o
+verificador
+gestor
+cliente
+*.kdev4
