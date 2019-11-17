@@ -1,0 +1,59 @@
+#ifndef MENSAGENS_H
+#define MENSAGENS_H
+
+#include "utils.h"
+#include "users.h"
+#include "cliente.h"
+
+//variaveis de contagem
+int ntpcs = 0;
+int nmessagens = 0;
+
+typedef struct _tpc tpc;
+typedef struct _msg msg;
+//estrutura das mensagens
+//no total as mensagens so podem ter 1000 chars
+struct _tpc{
+
+    //nome do topico
+    char nome[50];
+
+    //ponteiro para a primeira mensagem
+    msg * primsg;
+
+    //ponteiro para o topico anterior
+    tpc * ant;
+
+    //ponteiro para o topico seguinte
+    tpc * prox;
+
+    //array de ponteiros de users subscritos
+    user ** subscritos;
+
+};
+
+struct _msg{
+
+    //ponteiro para o topico da mensagem
+     tpc * topico;
+
+    //nao opbrigatorio?
+    char  titulo[50];
+
+    //corpo da mensagem
+    char * corpo[1000];
+
+    //tempo maximo que a mensagem fica guardada(tempo em segundos)
+    int duracao;
+
+
+
+    //mensagem anterior
+    msg * ant;
+
+    //proxima mensagem
+    msg * prox;
+
+};
+
+#endif
