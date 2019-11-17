@@ -1,78 +1,51 @@
 #include "cmd.h"
 
-/*
-int cmdline()
-{
- int i, len;
- char comando[100];
- for (;;)
- {
-   //system("clear");
-   fflush(stdin);
-   fgets(comando, 100, stdin);
-   comando[strlen(comando) - 1] = '\0';
-   printf("test: %s\n", comando);
-   len = strlen(comando);
-   //for(i=0;i<len;++i){
-   //limpar espaços e enters e tabs entre outros
-   //}
-   if (strcmp(comando, "fim") == 0)
-   {
-     return 0;
-   }
- }
- return 0;
-}
-int cmdline2()
-{
- char str[] = "hoje e mes novembro";
- char *pal[10];
- int n = 0;
- pal[n] = strtok(str, " ");
- while (pal[n] != NULL)
- {
-   pal[++n] = strtok(NULL, " ");
- }
- for (int i = 0; i < n; i++)
- {
-
- }
- return 0;
-}
-*/
-
 int cmdlineprinc()
 {
-  char cmd[255];
-  char *pal[20];
-  int n = 0;
-
-  for ( ;; )
+  char raw[255];
+  char *argv[10];
+  int argc = 0;
+    printf("Bem vindo a linha de comandos do gestor do msgdist,\n insira help ou h para pedir ajuda e dicas.\n");
+  printf ( "\n" );
+  printf ( "👉 " );
+  fflush ( stdout );
+  while ( fgets ( raw,200,stdin ) )
     {
+      if ( raw[0]!='\n' )
+        {
+          argc=0;
+          raw[strlen ( raw ) - 1] = '\0'; //trocar o \n por \0 para dizer o limite da cmd
+          argv[argc] = strtok ( raw, " " );
+          while ( argv[argc] != NULL )
+            {
+              argv[++argc] = strtok ( NULL, " " );
+            }
+          /*
+          for ( int i = 0; i< argc; i++ )
+            {
+              printf ( "\nargv[%d] = %s \n", i, argv[i] );
+            }
+            */
+          if ( strcmp ( argv[0], "shutdown" ) ==0 || strcmp ( argv[0], "s" ) ==0  )
+            {
+              printf ( "\tight imma head out\n" );
+              return 0;
+            } else if (strcmp ( argv[0], "help" ) ==0 || strcmp ( argv[0], "h" ) ==0 ){
+                printf("    Comandos disponiveis:\n"
+                    "help ou h - - - - - - - este ecra\n"
+                    "shutdown ou s - - - - - terminar o sistema MSGDIST\n");
+                
+            }
+          else
+            //outros comandos
+            printf ( "Comando \"%s\" não encontrado.\n",argv[0] );
+
+        }
+      printf ( "\n" );
       printf ( "👉 " );
       fflush ( stdout );
-      fgets ( cmd,200,stdin );
-      if ( cmd[0]!='\n' )
-        {
-          cmd[strlen ( cmd ) - 1] = '\0'; //trocar o \n por \0 para dizer o limite da cmding
-          pal[n] = strtok ( cmd, " " );
-          while ( pal[n] != NULL )
-            {
-              pal[++n] = strtok ( NULL, " " );
-            }
-          for ( int i = 0; i< n; i++ )
-            {
-              printf ( "\npal[%d] = %s \n", i, pal[i] );
-            }
-          if ( strcmp ( pal[0],"shutdown" ) ==0 )
-            {
-              printf ( "ight imma head out\n" );
-              //  return 0;
-
-            }
-        }
     }
 
   return 0;
-
 }
+

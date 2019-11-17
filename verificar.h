@@ -9,14 +9,12 @@
 //swicher - 1:liga o verificador, 0:desliga o verificador //ou meter aqui o pid para desligar o verificador
 int initverifica(char *comando, char *file_proibidas, int *rcv, int *env, int *pid);
 
-//verifica a uma mensagem msg com o verificador
+//verifica uma mensagem msg com o verificador
 int verificamsg(int pipein, int pipeout, char * msg);
 
 //terimina o verificador
 void killverifica(int pid);
 
-//funcao para ir buscar opcoes dos argumentos
-int getoption(int argc, char **argv, int *filter, int *cmd, int * help);
 
 //ve os erros que o verificador possa ter
 int errosverificador(char *file_proibidas);

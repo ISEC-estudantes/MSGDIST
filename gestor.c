@@ -15,52 +15,57 @@ Trabalho feito:
 
 
 
-void exitNow(int s) {
-    exit(0);
+void exitNow ( int s )
+{
+  exit ( 0 );
 };
 
 
-int welcome(){
-    printf(
- " __  __ ___  ___ ___ ___ ___ _____                     _            \n"
- "|  \\/  / __|/ __|   \\_ _/ __|_   _|  ___   __ _ ___ __| |_ ___ _ _  \n"
- "| |\\/| \\__ \\ (_ | |) | |\\__ \\ | |   |___| / _` / -_|_-<  _/ _ \\ '_| \n"
- "|_|  |_|___/\\___|___/___|___/ |_|         \\__, \\___/__/\\__\\___/_|   \n"
- "                                          |___/                     \n");
-    return 0;
+int welcome()
+{
+  printf (
+    " __  __ ___  ___ ___ ___ ___ _____                     _            \n"
+    "|  \\/  / __|/ __|   \\_ _/ __|_   _|  ___   __ _ ___ __| |_ ___ _ _  \n"
+    "| |\\/| \\__ \\ (_ | |) | |\\__ \\ | |   |___| / _` / -_|_-<  _/ _ \\ '_| \n"
+    "|_|  |_|___/\\___|___/___|___/ |_|         \\__, \\___/__/\\__\\___/_|   \n"
+    "                                          |___/                     \n" );
+  return 0;
 }
 
-int fhelp(){
-    welcome();
-    printf("trabalho feito por:\n");
-    return 0;
+int fhelp()
+{
+  welcome();
+  printf ( "trabalho feito por:\n" );
+  return 0;
 };
 
 
 int main ( int argc, char **argv )
 {
-    welcome();
-    
+  welcome();
+
   //filtrar palavras proibidas on/off
-  int filter=1, cmd=1, help = 0, rcv, env, maxnot, maxmsg, pid;
+  int filter=1, cmd=1, help = 0, rcv, env, maxnot, maxmsg, pid, erro, debug =0;
 
-  getoption(argc, argv, &filter, &cmd, &help);
+  getoption ( argc, argv, &filter, &cmd, &help, &debug );
 
-  if(help==1){
+  if ( help==1 )
+    {
       fhelp();
-      exit(0);
-}
-  
-  
+      exit ( 0 );
+    }
+
+
   char wordsnot[100];
 
-  
+
   getvars ( &maxmsg, &maxnot, wordsnot );
 
-  printf ( "maxmsg = %d\n"
-           "maxnot = %d\n"
-           "wordsnot = %s\n",
-           maxmsg, maxnot, wordsnot );
+  if ( debug == 1 )
+    printf ( "maxmsg = %d\n"
+             "maxnot = %d\n"
+             "wordsnot = %s\n",
+             maxmsg, maxnot, wordsnot );
 
   /*
 
@@ -79,10 +84,12 @@ int main ( int argc, char **argv )
 
   printf("o numero é %d.\n",maxmsg);
   */
-   signal(SIGUSR2, exitNow);
-  initverifica ( "verifica","proibidas", &rcv, &env, &pid );
+  signal ( SIGUSR2, exitNow );
+  if ( ( erro = initverifica ( "verifica","proibidas", &rcv, &env, &pid ) ) !=0 )
+    return erro;
   printf ( "result: %d\n",verificamsg ( env, rcv, "test not to test" ) );
   cmdlineprinc();
+
   killverifica ( pid );
   return 0;
 }

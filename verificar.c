@@ -10,15 +10,16 @@
 int initverifica ( char *comando, char *file_proibidas, int *rcv, int *env, int *pid )
 {
 
-  int *error = NULL ;
-  *error = errosverificador ( file_proibidas );
-  if ( error != NULL )
-    return *error;
+  int error = 0;
+  error = errosverificador ( file_proibidas );
+  if ( error != 0 )
+    return error;
 
   int p[2], pr[2];
   pipe ( p );
   pipe ( pr );
-  if ( ( *pid = fork() ) == 0 )
+  *pid = fork() ;
+  if ( ( *pid ) == 0 )
     {
       //child process
       close ( 0 ); //fecha acesso ao teclado
@@ -34,10 +35,7 @@ int initverifica ( char *comando, char *file_proibidas, int *rcv, int *env, int 
       close ( pr[1] ); //fechar extremidade de leitura do pipe - p[1]
 
       execl ( comando, comando, file_proibidas, NULL );
-      *error =   wait ( NULL );
 
-
-      exit ( 3 );//exit 3 - erro a meter a chamar o verificador
     }
   close ( p[0] );
   close ( pr[1] );
@@ -49,24 +47,24 @@ int initverifica ( char *comando, char *file_proibidas, int *rcv, int *env, int 
   return 0;
 }
 
+
+
 int verificamsg ( int pipein, int pipeout, char * msg )
 {
   char response[5];
 
-  int sizeofall = sizeof ( msg ) + sizeof ( " ##MSGEND## \n" );
+  int sizeofall = strlen ( msg ) + sizeof ( " ##MSGEND## \n" );
 
   char envia[sizeofall] ;
   strcpy ( envia, msg );
   strcat ( envia, " ##MSGEND## \n" );
 
   //escreve na pipe para enviar informação ao verificador
-  printf ( "%s\n",envia );
   write ( pipein, envia, strlen ( envia ) );
 
   //recebe informacao
   int n = read ( pipeout, response, sizeof ( response ) );
   response[n-1] ='\0';
-  printf ( "%s\n", response );
 
   return atoi ( response );
 
@@ -76,41 +74,6 @@ void killverifica ( int pid )
 {
   kill ( pid, SIGUSR2 );
   wait ( &pid );
-}
-
-
-
-//funcao para ir buscar as opcoes
-int getoption ( int argc, char **argv, int *filter, int *cmd,int * help )
-{
-
-  int opcao;  // Opção passada pelo usuário ao programa.
-
-  // Desativa as mensagens de erro da função getopt
-  //opterr = 0;
-
-  // Faz um loop pegando as opções passados pelo usuário. Note
-  // o ':' depois do 'z'. Isso quer dizer que deve haver um
-  // argumento depois dessa opção.
-  while ( ( opcao = getopt ( argc, argv, "fch" ) ) != -1 )
-    {
-      switch ( opcao )
-        {
-        //desactivar o filtro
-        case 'f':
-          *filter = 1;
-          break;
-        //desactivar o cmdline
-        case 'c':
-          *cmd = 1;
-          break;
-        //mostrar o help menu
-        case 'h':
-          *help=1;
-          break;
-        }
-    }
-  return 0;
 }
 
 int readWordFile ( FILE * f, char wdef[][19], int maxw )
@@ -139,7 +102,7 @@ int errosverificador ( char *file_proibidas )
       printf ( "não existem palavras proibidas no ficheiro %s\n", file_proibidas );
       return 3;
     }
-    return 0;
+  return 0;
 }
 
 

@@ -31,6 +31,8 @@
 int getvars(int *maxmsg, int *maxnot, char * wordsnot);
 
 
+//funcao para ir buscar opcoes dos argumentos
+int getoption(int argc, char **argv, int *filter, int *cmd, int * help, int * debug);
 
 
 #endif
