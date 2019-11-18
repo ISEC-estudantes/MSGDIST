@@ -6,7 +6,6 @@ all: debug
 debug:clean gestor verificador cliente
 
 
-
 verificador: verificador.c
 	$(CC) $(CFLAGS) verificador.c -o verificador -g
 

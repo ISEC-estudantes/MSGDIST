@@ -19,7 +19,7 @@ int initverifica ( char *comando, char *file_proibidas, int *rcv, int *env, int 
   pipe ( p );
   pipe ( pr );
   *pid = fork() ;
-  if ( ( *pid ) == 0 )
+  if ( *pid  == 0 )
     {
       //child process
       close ( 0 ); //fecha acesso ao teclado
@@ -35,7 +35,7 @@ int initverifica ( char *comando, char *file_proibidas, int *rcv, int *env, int 
       close ( pr[1] ); //fechar extremidade de leitura do pipe - p[1]
 
       execl ( comando, comando, file_proibidas, NULL );
-
+        exit(3);//fechar 
     }
   close ( p[0] );
   close ( pr[1] );
@@ -51,22 +51,22 @@ int initverifica ( char *comando, char *file_proibidas, int *rcv, int *env, int 
 
 int verificamsg ( int pipein, int pipeout, char * msg )
 {
-  char response[5];
-
-  int sizeofall = strlen ( msg ) + sizeof ( " ##MSGEND## \n" );
+  char response[10];
+  char  msgend[] = " ##MSGEND## \n" ;
+  int sizeofall = strlen ( msg ) + strlen (msgend );
 
   char envia[sizeofall] ;
   strcpy ( envia, msg );
-  strcat ( envia, " ##MSGEND## \n" );
-  //ading content
-
+  strcat ( envia,msgend );
+  fprintf (stdout,"msg = %s\n", msg );
+  
   //escreve na pipe para enviar informação ao verificador
   write ( pipein, envia, strlen ( envia ) );
 
   //recebe informacao
   int n = read ( pipeout, response, sizeof ( response ) );
   response[n-1] ='\0';
-
+  fprintf(stdout,"response = %s\n", response);
   return atoi ( response );
 
 }
