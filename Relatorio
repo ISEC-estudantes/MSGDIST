@@ -1,0 +1,19 @@
+
+
+\documentclass{article}
+%\usepackage[utf8]{inputenc}
+
+% Title Page
+%\title{Trabalho de SO}
+%\subtitle
+%\author{Oniken, Jota}
+
+%\begin{document}
+%\maketitle
+
+\begin{document}
+Hello world 
+\end{document}
+
+
+%\end{document}          

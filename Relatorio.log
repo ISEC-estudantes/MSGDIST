@@ -1,0 +1,24 @@
+This is TeXk, Version 3.14159265 (TeX Live 2019/Arch Linux) (preloaded format=tex 2019.11.15)  20 NOV 2019 18:40
+ Source specials enabled.
+**Relatorio
+(./Relatorio
+! Undefined control sequence.
+l.3 \documentclass
+                  {article}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.14 \begin
+           {abstract}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+[1] )
+Output written on Relatorio.dvi (1 page, 268 bytes).

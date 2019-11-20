@@ -26,11 +26,9 @@ verificar.o: verificar.c
 utils.o: utils.c
 	$(CC) $(CFLAGS) -c utils.c -g
 
-cmd.o: cmd.c
-	$(CC) $(CFLAGS) -c cmd.c -g 
 
-gestor: gestor.o verificar.o utils.o cmd.o
-	$(CC) $(CFLAGS) gestor.o verificar.o utils.o cmd.o -o gestor -g 
+gestor: gestor.o verificar.o utils.o
+	$(CC) $(CFLAGS) gestor.o verificar.o utils.o -o gestor -g 
 
 
 stable:clean verificador.c cliente.c gestor.c verificar.c utils.c cmd.c

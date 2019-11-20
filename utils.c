@@ -1,6 +1,15 @@
 #include "utils.h"
 
 
+void insere()
+{
+  printf ( "\n" );
+  printf ( "👉 " );
+  fflush ( stdout );
+}
+
+
+
 int getvars ( int *maxmsg, int *maxnot, char * wordsnot )
 {
   char *result;
