@@ -10,29 +10,45 @@ void insere()
 
 
 
-int getvars ( int *maxmsg, int *maxnot, char * wordsnot )
+int getvars ( int *maxmsg, int *maxnot, char * wordsnot , int *maxtimeout, int *maxusers)
 {
   char *result;
   
   result = getenv ( "MAXMSG" );
-  if ( ( result == NULL ) || result < 0 )
+  if ( ( result == NULL ) || atoi(result) < 0 )
     *maxmsg = DEF_MAXMSG;
   else
     *maxmsg = atoi ( result );
 
 
   result = getenv ( "MAXNOT" );
-  if ( ( result == NULL ) || result < 0 )
+  if ( ( result == NULL ) || atoi(result) < 0 )
     *maxnot = DEF_MAXNOT;
   else
     *maxnot = atoi ( result );
 
   result = getenv ( "WORDSNOT" );
-
   if ( result == NULL )
     strcpy ( wordsnot, DEF_WORDSNOT );
   else
     strcpy ( wordsnot, result );
+  
+  result = getenv ( "MAXTIMEOUT" );
+  if ( ( result == NULL ) || atoi(result) < 0 )
+    *maxtimeout = DEF_MAXTIMEOUT;
+  else
+    *maxtimeout = atoi ( result );
+  
+  
+  result = getenv ( "MAXUSERS" );
+  if ( ( result == NULL ) || atoi(result)< 0 )
+    *maxusers = DEF_MAXUSERS;
+  else
+    *maxusers = atoi ( result );
+
+
+  
+  
 
   return 0;
 }

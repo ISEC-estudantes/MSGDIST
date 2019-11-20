@@ -25,10 +25,16 @@
 //numero maximo de mensagens
 #define DEF_MAXMSG 100
 
+//timeout de default das mensagens
+#define DEF_MAXTIMEOUT 60
+
+//maximo de users que podem estar ligados ao gestor
+#define DEF_MAXUSERS 10
+
 
 //vai buscar as variaveis de ambiente necessarias
 //se nao existirem vai substituir com os macros apresentados acima
-int getvars(int *maxmsg, int *maxnot, char * wordsnot);
+int getvars(int *maxmsg, int *maxnot, char * wordsnot, int *maxtimeout, int *maxusers);
 
 
 //funcao para ir buscar opcoes dos argumentos

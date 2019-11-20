@@ -68,7 +68,7 @@ int main ( int argc, char **argv )
      welcome();
 
      //filtrar palavras proibidas on/off
-     int filter=1, ocmd=1, help = 0, rcv, env, maxnot, maxmsg, erro, debug =0;
+     int filter=1, ocmd=1, help = 0, rcv, env, maxnot, maxmsg, erro, debug =0, maxusers, maxtimeout;
 
      getoption ( argc, argv, &filter, &ocmd, &help, &debug );
 
@@ -81,13 +81,15 @@ int main ( int argc, char **argv )
      char wordsnot[100];
 
 
-     getvars ( &maxmsg, &maxnot, wordsnot );
+     getvars ( &maxmsg, &maxnot, wordsnot , &maxtimeout, &maxusers);
 
      if ( debug == 1 )
           printf ( "maxmsg = %d\n"
                    "maxnot = %d\n"
                    "wordsnot = %s\n",
-                   maxmsg, maxnot, wordsnot );
+                   "maxtimeout = %d\n",
+                   "maxusers = %d\n",
+                   maxmsg, maxnot, wordsnot , maxtimeout, maxusers);
 
      /*
 
