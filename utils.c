@@ -65,7 +65,7 @@ int getoption ( int argc, char **argv, int *filter, int *cmd,int * help, int * d
   // Faz um loop pegando as opções passados pelo usuário. Note
   // o ':' depois do 'z'. Isso quer dizer que deve haver um
   // argumento depois dessa opção.
-  while ( ( opcao = getopt ( argc, argv, "fch" ) ) != -1 )
+  while ( ( opcao = getopt ( argc, argv, "fchd" ) ) != -1 )
     {
       switch ( opcao )
         {

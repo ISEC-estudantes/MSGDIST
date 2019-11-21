@@ -1,6 +1,6 @@
 #ifndef VERIFICAR_H
 #define VERIFICAR_H
-
+#pragma once
 //verifica - liga o verificador
 //comando-nome do verificador;
 //file_proividas-ficheiro com as palavras proibidas;
@@ -10,12 +10,12 @@
 int initverifica(char *comando, char *file_proibidas, int *rcv, int *env, int *pid);
 
 //verifica uma mensagem msg com o verificador
-int verificamsg(int pipein, int pipeout, char * msg);
+int verificamsg ( int env, int rcv, char * msg );
 
 //terimina o verificador
 void killverifica(int pid);
 
 
 //ve os erros que o verificador possa ter
-int errosverificador(char *file_proibidas);
+//int errosverificador(char *file_proibidas);
 #endif

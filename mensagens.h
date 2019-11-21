@@ -2,12 +2,8 @@
 #define MENSAGENS_H
 
 #include "utils.h"
-#include "users.h"
-#include "cliente.h"
 
 //variaveis de contagem
-int ntpcs = 0;
-int nmessagens = 0;
 
 typedef struct _tpc tpc;
 typedef struct _msg msg;
@@ -27,8 +23,8 @@ struct _tpc{
     //ponteiro para o topico seguinte
     tpc * prox;
 
-    //array de ponteiros de users subscritos
-    user ** subscritos;
+    //array de ponteiros de users/clientes subscritos
+    cltusr ** subscritos;
 
 };
 
@@ -46,8 +42,9 @@ struct _msg{
     //tempo maximo que a mensagem fica guardada(tempo em segundos)
     int duracao;
 
-
-
+    //quem enviou
+    cltusr * author;
+    
     //mensagem anterior
     msg * ant;
 

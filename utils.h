@@ -13,7 +13,9 @@
 #include <getopt.h>
 #include <ctype.h>
 #include "cliente.h"
+#include "mensagens.h"
 
+#pragma once
 //defenicoes de default
 
 //nome do file com as mensagens proibidas
@@ -41,6 +43,6 @@ int getvars(int *maxmsg, int *maxnot, char * wordsnot, int *maxtimeout, int *max
 int getoption(int argc, char **argv, int *filter, int *cmd, int * help, int * debug);
 
 //insere uma mao imoji a apontar para o lado como um > ou $ no inicio de um comando
-void insere()
+void insere();
 
 #endif

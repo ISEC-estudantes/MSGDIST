@@ -1,13 +1,11 @@
 
 #ifndef CLIENTE_H
 #define CLIENTE_H
+#pragma once
 
 
+typedef struct _client cltusr;
 
-typedef struct _client cliente;
-
-
-int NCLIENTES;
 
 struct _client
 {
@@ -19,10 +17,10 @@ struct _client
   int pid;
 
   //cliente anterior
-  cliente * ant;
+  cltusr* ant;
 
   //proximo cliente
-  cliente * prox;
+  cltusr * prox;
 
 };
 #endif
