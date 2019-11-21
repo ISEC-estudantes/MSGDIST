@@ -15,18 +15,27 @@ int cpid;
 char * wordsnot;
 
 void exitChild() {
+    
     int erro = 0;
+    
     waitpid ( cpid,&erro, 0 );
-
-    if ( erro == 2 ) {
-        printf ( "\nO ficheiro %s nao existe\n", wordsnot );
+    //printf("\nWIFEXITED ( erro ) = %d\n",WIFEXITED ( erro ) );
+    //printf("\nWEXITSTATUS( erro ) = %d\n", WEXITSTATUS( erro ));
+    switch ( WEXITSTATUS ( erro ) ) {
+    case 2:
+        printf ( "\nO ficheiro das palavras proibidas não existe\n" );
         exit ( 2 );
-    } else if ( erro == 3 ) {
-        printf ( "\nNão existem palavras proibidas no ficheiro \"%s\"\n", wordsnot );
+        break;
+
+    case 3:
+        printf ( "\nNão existem palavras proibidas no ficheiro delas\n");
         exit ( 3 );
-    } else if ( erro == 4 ) {
+        break;
+
+    case 4 :
         printf ( "\nO comando verificador nao existe\n" );
         exit ( 4 );
+        break;
 
     }
 
@@ -122,11 +131,11 @@ int main ( int argc, char **argv ) {
 
             while ( ( cmd[++ncmd]= strtok ( NULL," " ) ) != NULL );
 
-            if ( debug==1 ){
+            if ( debug==1 ) {
                 for ( int i = 0; i< ncmd; i++ )
                     printf ( "\nncmd[%d] = %s \n", i, cmd[i] );
             }
-            
+
             if ( strcmp ( cmd[0], "shutdown" ) ==0 || strcmp ( cmd[0], "s" ) ==0 ) {
                 printf ( "\tight imma head out\n" );
                 exitNow();
