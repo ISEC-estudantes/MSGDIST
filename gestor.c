@@ -164,7 +164,23 @@ int main ( int argc, char **argv ) {
 
                 }
 
-            } else
+            } else if ( strcmp ( cmd[0], "filter" ) ==0 || strcmp ( cmd[0], "f" ) ==0 ) {
+                printf ( "\tEste comando ainda nao esta implementado.\n" );
+            } else  if ( strcmp ( cmd[0], "users" ) ==0 || strcmp ( cmd[0], "us" ) ==0 ) {
+                printf ( "\tEste comando ainda nao esta implementado.\n" );
+            } else  if ( strcmp ( cmd[0], "topics" ) ==0 || strcmp ( cmd[0], "ts" ) ==0 ) {
+                printf ( "\tEste comando ainda nao esta implementado.\n" );
+            } else  if ( strcmp ( cmd[0], "msg" ) ==0  ) {
+                printf ( "\tEste comando ainda nao esta implementado.\n" );
+            } else  if ( strcmp ( cmd[0], "topic" ) ==0 ) {
+                printf ( "\tEste comando ainda nao esta implementado.\n" );
+            } else  if ( strcmp ( cmd[0], "del" ) ==0 ) {
+                printf ( "\tEste comando ainda nao esta implementado.\n" );
+            } else if ( strcmp ( cmd[0], "kick" ) ==0 ) {
+                printf ( "\tEste comando ainda nao esta implementado.\n" );
+            } else if ( strcmp ( cmd[0], "prune" ) ==0 ) {
+                printf ( "\tEste comando ainda nao esta implementado.\n" );
+            } else 
                 //outros comandos
                 printf ( "Comando \"%s\" não encontrado.\n",cmd[0] );
         }
