@@ -38,4 +38,4 @@ stable:clean verificador.c cliente.c gestor.c verificar.c utils.c cmd.c
 
 
 clean:
-	rm -vfr *~ msgdist
+	rm -vfr *~  *.o verificador gestor cliente
