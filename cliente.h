@@ -21,7 +21,6 @@ struct _client
 
   //proximo cliente
   cltusr * prox;
-
 };
 #endif
 

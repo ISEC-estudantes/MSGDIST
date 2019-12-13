@@ -12,6 +12,8 @@
 #include <getopt.h>
 #include <getopt.h>
 #include <ctype.h>
+#include<fcntl.h>
+
 #include "cliente.h"
 #include "mensagens.h"
 

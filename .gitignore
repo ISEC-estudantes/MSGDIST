@@ -4,3 +4,4 @@ gestor
 cliente
 *.kdev4
 .kdev4/**
+.vscode

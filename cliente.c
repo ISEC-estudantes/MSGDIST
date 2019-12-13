@@ -58,10 +58,15 @@ int main(int argc, char **argv)
         return 2;
     }
 
-    welcome();
     /* - -  - - - - - - -  - - - - --  --  --  --  - - - - - - - -
         EDITOR DE TEXTO
      - - - - - -  - - - - - - - - - - - - - - - - - - - - --  -- - */
     
+    /// NOMES E FIFOS
+    /*
+    os fifos tem de ser para cada lado , cria se 1 para o gestor receber mensagens e os clientes criam os seus fifos para receberem mensagens, para verificar os nomes  dos users listara se todos os fifos do diretorio actual e verificar se algum tem o mesmo nome que o user, se tiver da se mensagem de erro se nao cria se um fifo com o nome do user e aceita se o seu nome como unico
+    */
+
+
     return 0;
 }

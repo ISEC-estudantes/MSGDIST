@@ -126,10 +126,10 @@ int main ( int argc, char **argv ) {
         strcpy ( copia, raw );
         if ( raw[0]!='\n' ) {
 
-            raw[strlen ( raw ) - 1] = '\0'; //trocar o \n por \0 para dizer o limite da cmd
-            cmd[ncmd] = strtok ( raw, " " );
+            //raw[strlen ( raw ) - 1] = '\0'; //trocar o \n por \0 para dizer o limite da cmd
+            cmd[ncmd] = strtok ( raw, " \n\t" );
 
-            while ( ( cmd[++ncmd]= strtok ( NULL," " ) ) != NULL );
+            while ( ( cmd[++ncmd]= strtok ( NULL," \n\t" ) ) != NULL );
 
             if ( debug==1 ) {
                 for ( int i = 0; i< ncmd; i++ )

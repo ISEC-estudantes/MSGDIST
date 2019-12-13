@@ -1,41 +1,24 @@
-CC=gcc
-CFLAGS=-Wall --std=c11
+GESTOROBS = gestor.o verificar.o utils.o
+GESTOROUT = gestor
 
-all: debug
+CLIENTEOBS = cliente.o
+CLIENTEOUT = cliente
 
-debug:clean gestor verificador cliente
+all: $(GESTOROUT)  $(CLIENTEOUT)
 
+$(CLIENTEOUT):$(CLIENTEOBS)
+	$(CC) $(CLIENTEOBS) -o $(CLIENTEOUT) $(CFLAGS)
 
-verificador: verificador.c
-	$(CC) $(CFLAGS) verificador.c -o verificador -g
-
-
-cliente: cliente.o
-	 $(CC) $(CFLAGS) cliente.o -o cliente -g 
-
-cliente.o: cliente.c
-	$(CC) $(CFLAGS) -c cliente.c -g 
+$(GESTOROUT):$(GESTOROBS)
+	$(CC) $(GESTOROBS) -o $(GESTOROUT) $(CFLAGS)
 
 
-gestor.o: gestor.c
-	$(CC) $(CFLAGS) -c gestor.c -o gestor -o gestor.o -g 
-
-verificar.o: verificar.c
-	$(CC) $(CFLAGS) -c verificar.c -o verificar.o -g 
-
-utils.o: utils.c
-	$(CC) $(CFLAGS) -c utils.c -g
+%.o:%.c
+	$(CC) -o $@ -c $< $(CFLAGS)
 
 
-gestor: gestor.o verificar.o utils.o
-	$(CC) $(CFLAGS) gestor.o verificar.o utils.o -o gestor -g 
+debug: CFLAGS += -Wall -g
+debug: all
 
-
-stable:clean verificador.c cliente.c gestor.c verificar.c utils.c cmd.c
-	$(CC) $(CFLAGS) verificador.c -o verificador 
-	$(CC) $(CFLAGS) cliente.c -o cliente
-	$(CC) $(CFLAGS) gestor.c verificar.c utils.c cmd.c -o gestor
-
-
-clean:
-	rm -vfr *~  *.o verificador gestor cliente
+clear: *.o $(CLIENTEOUT) $(GESTOROUT)
+	rm -f *.o $(CLIENTEOUT) $(GESTOROUT)
