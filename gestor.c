@@ -42,8 +42,7 @@ void exitChild()
 
 void exitNow()
 {
-
-    killverifica(info->cpid);
+    freethings(info);
     exit(0);
 };
 
@@ -122,7 +121,7 @@ int main(int argc, char **argv)
 
     signal(SIGUSR2, exitNow);
     signal(SIGCHLD, exitChild);
-
+    signal (SIGINT, exitNow);
     ///////////////////////////////////////////
     /////////////////////VERIFICADOR///////////
 
@@ -132,23 +131,21 @@ int main(int argc, char **argv)
     ////////////////////////////////////////////////
     //////////////CRIACAO DAS PIPES/////////////////
 
-    int fifo_gestor = -1;
-    if ((fifo_gestor = mkfifo("gestor-fifo", 0666)) < 1)
+    mkfifo("gestor-fifo", 0666);
+    if (access("gestor-fifo", R_OK) != 0)
     {
         fprintf(stderr, "erro a criar o fifo do gestor.");
         killverifica(info->cpid);
         return -2;
     }
-
     ////////////////////////////////////////////////
     //////////criacao do fifo do gestor/////////////
 
-    
     pthread_create(&(info->read_fifo), NULL, (void *)readingfifo, (void *)info);
 
     ///////////////////////////////////////
     ////////////////////COMAND LINE////////
-
+    
     cmd(info);
 
     ///////////////////////////////////////

@@ -77,6 +77,9 @@ struct _global{
 //quando se atingui o numero maximo de clientes
 #define INVALID_CLIENT_MAX -2
 
+//tudo correu como esperado
+#define OK_SENT 0
+
 //para adicionar um cliente
 #define ADD_CLIENT 1
 
@@ -84,7 +87,16 @@ struct _global{
 #define ADD_MESSAGE 2
 
 //para enviar uma subrescricao
-#define ADD_SUBSCRITION 3
+#define SUBSCRITION 3
+
+typedef struct _sub sub;
+
+struct _sub{
+    int pid;
+    
+};
+
+#define CLOSING_CLIENT 4
 
 
 //vai buscar as variaveis de ambiente necessarias

@@ -3,10 +3,10 @@
 
 int cmd(global *info)
 {
-
+    cltusr *aux;
     char raw[255], copia[255];
     char *cmd[10] = {};
-    int ncmd = 0, erro = 0;
+    int ncmd = 0, erro = 0, counter;
 
     printf("Bem vindo a linha de comandos do gestor do msgdist,\n insira help ou h para pedir ajuda e dicas.\n");
     insere();
@@ -68,7 +68,19 @@ int cmd(global *info)
             }
             else if (strcmp(cmd[0], "users") == 0 || strcmp(cmd[0], "us") == 0)
             {
-                printf("\tEste comando ainda nao esta implementado.\n");
+                if(info->listclientes){
+                    counter = 0;
+                    aux = info->listclientes;
+                    printf("Users conectados:\n");
+                    while(aux){
+                        printf("\t%s\n",aux->nome);
+                        ++counter;
+                        aux = aux->prox;
+                    }
+                    printf("Existem %d users online.\n",counter);
+                }else{
+                    printf("Não existem utilizadores online.\n");
+                }
             }
             else if (strcmp(cmd[0], "topics") == 0 || strcmp(cmd[0], "ts") == 0)
             {

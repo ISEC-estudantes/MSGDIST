@@ -1,4 +1,5 @@
 #include "threads.h"
+#include "verificar.h"
 
 typedef struct _sendthings sendthings;
 struct _sendthings
@@ -9,39 +10,74 @@ struct _sendthings
 
 void readingfifo(void *input)
 {
-    sendthings temporary;
+    sendthings temp;
     pthread_t handler_creat;
     global *info = (global *)input;
+    temp.info = info;
 
-    int gestorfifo = open("gestorfifo", O_RDONLY), recebe = 0;
-    cltusr addclientestruct;
-    msg addmsgstruct;
+    int gestorfifo = open("gestor-fifo", O_RDONLY), recebe = 0;
+    unsigned int pid;
+    cltusr addclientestruct, *auxc, *antauxc, *proxauxc;
+    //msg addmsgstruct;
     while (info->terminate != 1)
     {
+        recebe = 0;
         read(gestorfifo, (void *)&recebe, sizeof(int));
         if (recebe == ADD_CLIENT)
         {
             read(gestorfifo, (void *)&addclientestruct, sizeof(cltusr));
-            pthread_create(&handler_creat, NULL, (void*)addcliente, (void *)&temporary);
+            temp.temporary = (void *)&addclientestruct;
+            pthread_create(&handler_creat, NULL, (void *)addcliente, (void *)&temp);
+        }
+        if (recebe == CLOSING_CLIENT)
+        {
+            read(gestorfifo, (void *)&pid, sizeof(int));
+            if (info->listclientes)
+            {
+                auxc = info->listclientes;
+                proxauxc = auxc->prox;
+                while (proxauxc && pid != auxc->pid)
+                {
+                    auxc = proxauxc;
+                    proxauxc = proxauxc->prox;
+                }
+                if (pid == auxc->pid)
+                {
+                    antauxc = auxc->ant;
+                    if (info->listclientes == auxc)
+                    {
+                        info->listclientes = proxauxc;
+                        if (proxauxc)
+                            proxauxc->ant = NULL;
+                    }
+                    if (antauxc)
+                        antauxc->prox = proxauxc;
+                    if (proxauxc)
+                        proxauxc->ant = antauxc;
+                    free(auxc);
+                }
+            }
         }
     }
+    close(gestorfifo);
 }
 
 void addcliente(void *received)
 {
     sendthings *utils = ((sendthings *)received);
     global *info = utils->info;
-    cltusr addclientestruct = *((cltusr *)utils->temporary);
+    cltusr *addclientestruct = ((cltusr *)utils->temporary);
 
     cltusr *aux = info->listclientes, *antaux = NULL;
-    int fd;
-    char *cliente;
-    sprintf(cliente, "%d", addclientestruct.pid);
+    int fd, erro;
+    char cliente[10];
+    sprintf(cliente, "%d", addclientestruct->pid);
 
     if (info->maxusers == info->nclientes)
     {
         fd = open(cliente, O_WRONLY);
-        write(fd, (void*)(int)-2, sizeof(int));
+        erro = -2;
+        write(fd, (void *)&erro, sizeof(int));
         close(fd);
         return;
     }
@@ -55,16 +91,19 @@ void addcliente(void *received)
             return;
         }
         aux = info->listclientes;
-        strcpy(aux->nome, addclientestruct.nome);
-        aux->pid = addclientestruct.pid;
+        strcpy(aux->nome, addclientestruct->nome);
+        aux->pid = addclientestruct->pid;
         aux->ant = NULL;
         aux->prox = NULL;
         ++(info->nclientes);
+        fd = open(cliente, O_WRONLY);
+        erro = 0;
+        write(fd, (void *)&erro, sizeof(int));
     }
     else
     {
         //verificacao do nome
-        if (nomecheck(info, cliente, &addclientestruct) != 0)
+        if (nomecheck(info, cliente, addclientestruct) != 0)
             return;
 
         while (aux != NULL)
@@ -79,8 +118,8 @@ void addcliente(void *received)
             semmem();
             freethings(info);
         }
-        strcpy(aux->nome, addclientestruct.nome);
-        aux->pid = addclientestruct.pid;
+        strcpy(aux->nome, addclientestruct->nome);
+        aux->pid = addclientestruct->pid;
         aux->ant = antaux;
         aux->prox = NULL;
         ++(info->nclientes);
@@ -89,7 +128,7 @@ void addcliente(void *received)
 
 int nomecheck(global *info, char *cliente, cltusr *aux)
 {
-    int i, numint, len, fd;
+    int numint, len, fd, erro;
     cltusr *actual = info->listclientes;
     char numchar[3];
 
@@ -109,12 +148,22 @@ int nomecheck(global *info, char *cliente, cltusr *aux)
             numchar[1] = aux->nome[len - 2];
             numchar[2] = aux->nome[len - 1];
             numint = atoi(numchar);
+            fprintf(stderr, "aux->nome = %s; numint = %d\n", aux->nome, numint);
             if (numint < 999)
+            {
                 ++numint;
+                sprintf(numchar, "%03d", numint);
+                fprintf(stderr, "numchar = %s\n", numchar);
+                aux->nome[len - 3] = numchar[0];
+                aux->nome[len - 2] = numchar[1];
+                aux->nome[len - 1] = numchar[2];
+            }
+
             else
             {
                 fd = open(cliente, O_WRONLY);
-                write(fd, (void*)((int)-1), sizeof(int));
+                erro = -1;
+                write(fd, (void *)&erro, sizeof(int));
                 close(fd);
             }
         }
@@ -149,7 +198,7 @@ void intapagaclientes(global *info)
     }
 }
 
-void freethings(global * info)
+void freethings(global *info)
 {
     info->terminate = 1;
     pthread_join(info->read_fifo, NULL);
@@ -196,4 +245,5 @@ void freethings(global * info)
         }
         free(info);
     }
+    system("rm gestor-fifo");
 }

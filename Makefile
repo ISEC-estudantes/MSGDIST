@@ -6,6 +6,8 @@ CLIENTEOUT = cliente
 
 CFLAGS += -lncurses -lpthread
 
+default: debug
+
 all: $(GESTOROUT)  $(CLIENTEOUT) verificador
 
 verificador: verificador.c

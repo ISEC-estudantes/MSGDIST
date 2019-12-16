@@ -13,8 +13,7 @@ int initverifica ( char *comando, char *file_proibidas, unsigned int *rcv, unsig
 int verificamsg ( int env, int rcv, char * msg );
 
 //terimina o verificador
-void killverifica(int pid);
-
+void killverifica ( int pid ) ;
 
 //ve os erros que o verificador possa ter
 //int errosverificador(char *file_proibidas);
