@@ -6,12 +6,11 @@
 
 typedef struct _client cltusr;
 
-
 struct _client
 {
 
   //nome do user
-  char * nome;
+  char nome[256];
 
   //id do cliente
   int pid;

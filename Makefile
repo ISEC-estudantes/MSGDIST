@@ -1,10 +1,15 @@
-GESTOROBS = gestor.o verificar.o utils.o
+GESTOROBS = gestor.o verificar.o utils.o comand.o threads.o
 GESTOROUT = gestor
 
 CLIENTEOBS = cliente.o
 CLIENTEOUT = cliente
 
-all: $(GESTOROUT)  $(CLIENTEOUT)
+CFLAGS += -lncurses -lpthread
+
+all: $(GESTOROUT)  $(CLIENTEOUT) verificador
+
+verificador: verificador.c
+	$(CC) verificador.c -o verificador $(CFLAGS)
 
 $(CLIENTEOUT):$(CLIENTEOBS)
 	$(CC) $(CLIENTEOBS) -o $(CLIENTEOUT) $(CFLAGS)
@@ -20,5 +25,7 @@ $(GESTOROUT):$(GESTOROBS)
 debug: CFLAGS += -Wall -g
 debug: all
 
-clear: *.o $(CLIENTEOUT) $(GESTOROUT)
-	rm -f *.o $(CLIENTEOUT) $(GESTOROUT)
+
+clear:
+	rm -f *.o $(CLIENTEOUT) $(GESTOROUT) verificador
+	./rmfifos 1

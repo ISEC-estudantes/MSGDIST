@@ -11,6 +11,9 @@ typedef struct _msg msg;
 //no total as mensagens so podem ter 1000 chars
 struct _tpc{
 
+    //id do topico
+    int topicid;
+    
     //nome do topico
     char nome[50];
 
@@ -26,9 +29,15 @@ struct _tpc{
     //array de ponteiros de users/clientes subscritos
     cltusr ** subscritos;
 
+    //numero de mensagens
+    int nmensagens;
+
 };
 
 struct _msg{
+
+    //msgid
+    int msgid;
 
     //ponteiro para o topico da mensagem
      tpc * topico;

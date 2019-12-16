@@ -7,7 +7,7 @@
 //rcv-pipe para receber informação do verificador;
 //env-pipe para enviar informação ao verificador;
 //swicher - 1:liga o verificador, 0:desliga o verificador //ou meter aqui o pid para desligar o verificador
-int initverifica ( char *comando, char *file_proibidas, int *rcv, int *env, int *pid ) {
+int initverifica ( char *comando, char *file_proibidas, unsigned int *rcv, unsigned int *env, unsigned int *pid ) {
 
     int error = 0;
     //error = errosverificador ( file_proibidas );

@@ -1,6 +1,8 @@
 #include "utils.h"
 
 
+
+
 void insere()
 {
   printf ( "\n" );
@@ -90,3 +92,6 @@ int getoption ( int argc, char **argv, int *filter, int *cmd,int * help, int * d
   return 0;
 }
 
+void semmem(){
+  fprintf(stderr, "O dispositivo esta' sem memoria.\n");
+}
