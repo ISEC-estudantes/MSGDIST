@@ -24,7 +24,8 @@ $(GESTOROUT):$(GESTOROBS)
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 
-debug: CFLAGS += -Wall -g
+debug: CFLAGS += -Wall -g -DDEBUG
+	#-fsanitize=address
 debug: all
 
 

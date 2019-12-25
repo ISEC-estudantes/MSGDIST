@@ -18,7 +18,7 @@
 #include <pthread.h> //adicionar no compilador -lpthread
 #include <ncurses.h> //adicionar no compilador -lncurses
 
-#include "cliente.h"
+#include "cltusr.h"
 #include "mensagens.h"
 
 #pragma once
@@ -54,6 +54,9 @@ struct _global{
 };
 
                 //defenicoes de default
+//nome do fifo do gestor
+#define GESTORFIFO "gestor-fifo"
+
 
 //nome do file com as mensagens proibidas
 #define DEF_WORDSNOT "proibidas"

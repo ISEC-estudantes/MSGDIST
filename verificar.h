@@ -17,4 +17,5 @@ void killverifica ( int pid ) ;
 
 //ve os erros que o verificador possa ter
 //int errosverificador(char *file_proibidas);
+
 #endif
