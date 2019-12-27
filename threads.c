@@ -2,227 +2,188 @@
 #include "verificar.h"
 
 typedef struct _sendthings sendthings;
-struct _sendthings
-{
+struct _sendthings {
     global *info;
     void *temporary;
 };
 
-void readingfifo(void *input)
-{
+void readingfifo ( void *input ) {
     sendthings temp;
     pthread_t handler_creat;
-    global *info = (global *)input;
+    global *info = ( global * ) input;
     temp.info = info;
-    int gestorfifo = open(GESTORFIFO, O_RDONLY), recebe, n, loop = 0;
-    if (gestorfifo < 0)
-    {
-        printf("erro[%d] a abrir o fifo.\n", gestorfifo);
-        freethings(info);
+    int gestorfifo = open ( GESTORFIFO, O_RDWR ), recebe, n, loop = 0;
+    gestorfifo = open ( GESTORFIFO, O_RDONLY );
+    int lixofifo = open ( GESTORFIFO, O_WRONLY );
+    if ( gestorfifo < 0 ) {
+        printf ( "erro[%d] a abrir o fifo.\n", gestorfifo );
+        freethings ( info );
     }
     unsigned int pid;
+
     cltusr addclientestruct, *auxc, *antauxc, *proxauxc;
-    //msg addmsgstruct;
-    while (info->terminate != 1)
-    {
-        close(gestorfifo);
-        if (info->debug == 1)
-            printf("[THREAD_READINGFIFO] new round\n");
+    while ( info->terminate != 1 ) {
+        //close(gestorfifo);
+        if ( info->debug == 1 )
+            printf ( "[THREAD_READINGFIFO] new round\n" );
         recebe = 0;
-        gestorfifo = open(GESTORFIFO, O_RDONLY);
-        if (gestorfifo < 0)
-        {
-            printf("erro[%d] a abrir o fifo.\n", gestorfifo);
-            freethings(info);
-        }
 
-        n = read(gestorfifo, (void *)&recebe, sizeof(int));
+        n = read ( gestorfifo, ( void * ) &recebe, sizeof ( int ) );
 
-        if (info->debug == 1)
-        {
-            if (n > 0)
-            {
-                printf("recebe = %d\n", n);
+        if ( info->debug == 1 ) {
+            if ( n > 0 ) {
+                printf ( "recebe = %d\n", n );
                 loop = 0;
-            }
-            else if (loop == 0)
-            {
-                printf("in loop...\n");
+            } else if ( loop == 0 ) {
+                printf ( "in loop...\n" );
                 loop = 1;
             }
         }
 
-        if (n == 0)
-        {
-            close(gestorfifo);
-            gestorfifo = open(GESTORFIFO, O_RDONLY);
-            if (gestorfifo == -1)
-            {
-                freethings(info);
-            }
-        }
-
-        perror("erro no read 1");
-        if (recebe == ADD_CLIENT)
-        {
-            if (info->debug == 1)
-                printf("a ler cliente...\n");
-            read(gestorfifo, (void *)&addclientestruct, sizeof(cltusr));
-            if (info->debug == 1)
-                printf("cliente -> nome = %s\n", addclientestruct.nome);
-            temp.temporary = (void *)&addclientestruct;
-            //pthread_create ( &handler_creat, NULL, ( void * ) addcliente, ( void * ) &temp );
-            addcliente((void *)&temp);
-        }
-        else if (recebe == CLOSING_CLIENT)
-        {
-            read(gestorfifo, (void *)&pid, sizeof(int));
-            if (info->debug == 1)
-                printf("cliente a fechar\n");
-            removecliente(info, pid);
+        if ( recebe == ADD_CLIENT ) {
+            if ( info->debug == 1 )
+                printf ( "a ler cliente...\n" );
+            read ( gestorfifo, ( void * ) &addclientestruct, sizeof ( cltusr ) );
+            if ( info->debug == 1 )
+                printf ( "cliente -> nome = %s\n", addclientestruct.nome );
+            temp.temporary = ( void * ) &addclientestruct;
+            pthread_create ( &handler_creat, NULL, ( void * ) addcliente, ( void * ) &temp );
+            //addcliente((void *)&temp);
+        } else if ( recebe == CLOSING_CLIENT ) {
+            read ( gestorfifo, ( void * ) &pid, sizeof ( int ) );
+            if ( info->debug == 1 )
+                printf ( "cliente a fechar\n" );
+            temp.temporary = ( void * ) &pid;
+            pthread_create ( &handler_creat, NULL, ( void * ) removecliente, ( void* ) &temp );
+        } else if ( recebe == 0 ) {
+            printf ( "recebemos 0\n" );
         }
     }
-    close(gestorfifo);
+    close ( gestorfifo );
 }
 
-void removecliente(global * info, int pid)
-{
+void removecliente ( void * input ) {
+    //receber coisas
+    sendthings *temp = ( sendthings * ) input;
+    global * info = temp->info;
+    int pid = * ( ( int * ) temp->temporary );
+
     cltusr *auxc, *proxauxc, *antauxc;
-    if (info->listclientes)
-    {
-        if (info->debug == 1)
-            printf("listclientes existe\n");
+    if ( info->listclientes ) {
+        if ( info->debug == 1 )
+            printf ( "listclientes existe\n" );
         auxc = info->listclientes;
         proxauxc = auxc->prox;
-        while (proxauxc && pid != auxc->pid)
-        {
+        while ( proxauxc && pid != auxc->pid ) {
             auxc = proxauxc;
             proxauxc = proxauxc->prox;
         }
-        if (pid == auxc->pid)
-        {
+        if ( pid == auxc->pid ) {
             antauxc = auxc->ant;
-            if (info->listclientes == auxc)
-            {
+            if ( info->listclientes == auxc ) {
                 info->listclientes = proxauxc;
-                if (proxauxc)
+                if ( proxauxc )
                     proxauxc->ant = NULL;
             }
-            if (antauxc)
+            if ( antauxc )
                 antauxc->prox = proxauxc;
-            if (proxauxc)
+            if ( proxauxc )
                 proxauxc->ant = antauxc;
-            free(auxc);
+            free ( auxc );
         }
     }
 }
 
-void addcliente(void *received)
-{
-    sendthings *utils = ((sendthings *)received);
+void addcliente ( void *received ) {
+    sendthings *utils = ( ( sendthings * ) received );
     global *info = utils->info;
-    cltusr *addclientestruct = ((cltusr *)utils->temporary);
+    cltusr *addclientestruct = ( ( cltusr * ) utils->temporary );
 
     cltusr *aux = info->listclientes, *antaux = NULL;
     int fd, erro;
     char cliente[10];
-    sprintf(cliente, "%d", addclientestruct->pid);
+    sprintf ( cliente, "%d", addclientestruct->pid );
 
-    if (info->maxusers == info->nclientes)
-    {
-        fd = open(cliente, O_WRONLY);
-        if (fd == -1)
-        {
-            kill(addclientestruct->pid, SIGINT);
-        }
-        else
-        {
+    if ( info->maxusers == info->nclientes ) {
+        fd = open ( cliente, O_WRONLY );
+        if ( fd == -1 ) {
+            kill ( addclientestruct->pid, SIGINT );
+        } else {
             erro = INVALID_CLIENT_MAX;
-            write(fd, (void *)&erro, sizeof(int));
-            close(fd);
+            write ( fd, ( void * ) &erro, sizeof ( int ) );
+            close ( fd );
         }
         return;
     }
 
     //ajustar o nome para enters e espacos
     char *nm = addclientestruct->nome;
-    int len = strlen(addclientestruct->nome);
+    int len = strlen ( addclientestruct->nome );
     len--;
-    while ((
-        nm[len] == ' ' ||
-        nm[len] == '\t' ||
-        nm[len] == '\n' )&&
-        len > 0)
-    {
+    while ( (
+                nm[len] == ' ' ||
+                nm[len] == '\t' ||
+                nm[len] == '\n' ) &&
+            len > 0 ) {
         nm[len--] = '\0';
     }
 
-    if (aux == NULL)
-    {
-        info->listclientes = (cltusr *)malloc(sizeof(cltusr));
-        if (!info->listclientes)
-        {
-            freethings(info);
+    if ( aux == NULL ) {
+        info->listclientes = ( cltusr * ) malloc ( sizeof ( cltusr ) );
+        if ( !info->listclientes ) {
+            freethings ( info );
             return;
         }
         aux = info->listclientes;
-        strcpy(aux->nome, addclientestruct->nome);
+        strcpy ( aux->nome, addclientestruct->nome );
         aux->pid = addclientestruct->pid;
         aux->ant = NULL;
         aux->prox = NULL;
-        ++(info->nclientes);
-        fd = open(cliente, O_WRONLY);
+        ++ ( info->nclientes );
+        fd = open ( cliente, O_WRONLY );
         erro = 0;
-        write(fd, (void *)&erro, sizeof(int));
-        write(fd, (void *)&addclientestruct->nome, sizeof(char) * 256);
-    }
-    else
-    {
+        write ( fd, ( void * ) &erro, sizeof ( int ) );
+        write ( fd, ( void * ) &addclientestruct->nome, sizeof ( char ) * 256 );
+    } else {
         //verificacao do nome
-        if (nomecheck(info, cliente, addclientestruct) != 0)
+        if ( nomecheck ( info, cliente, addclientestruct ) != 0 )
             return;
 
-        while (aux != NULL)
-        {
+        while ( aux != NULL ) {
             antaux = aux;
             aux = aux->prox;
         }
-        antaux->prox = malloc(sizeof(cltusr));
+        antaux->prox = malloc ( sizeof ( cltusr ) );
         aux = antaux->prox;
-        if (!aux)
-        {
+        if ( !aux ) {
             semmem();
-            freethings(info);
+            freethings ( info );
         }
-        strcpy(aux->nome, addclientestruct->nome);
+        strcpy ( aux->nome, addclientestruct->nome );
         aux->pid = addclientestruct->pid;
         aux->ant = antaux;
         aux->prox = NULL;
-        ++(info->nclientes);
-        fd = open(cliente, O_WRONLY);
-        if (fd == -1)
-        {
-            printf("Problemas a contactar o cliente... a terminar lo.\n");
-            kill(addclientestruct->pid, SIGINT);
-            removecliente(info, addclientestruct->pid);
+        ++ ( info->nclientes );
+        fd = open ( cliente, O_WRONLY );
+        if ( fd == -1 ) {
+            printf ( "Problemas a contactar o cliente... a terminar lo.\n" );
+            kill ( addclientestruct->pid, SIGINT );
+            removecliente ( info, addclientestruct->pid );
         }
-        write(fd, (void *)&erro, sizeof(int));
-        write(fd, (void *)&addclientestruct->nome, sizeof(char) * 256);
-        close(fd);
+        write ( fd, ( void * ) &erro, sizeof ( int ) );
+        write ( fd, ( void * ) &addclientestruct->nome, sizeof ( char ) * 256 );
+        close ( fd );
     }
 }
 
-int nomecheck(global *info, char *cliente, cltusr *aux)
-{
+int nomecheck ( global *info, char *cliente, cltusr *aux ) {
     int numint, len, fd, erro;
     cltusr *actual = info->listclientes;
     char numchar[3];
 
-    while (actual)
-    {
-        if (strcmp(aux->nome, actual->nome) == 0)
-        {
-            len = strlen(aux->nome);
+    while ( actual ) {
+        if ( strcmp ( aux->nome, actual->nome ) == 0 ) {
+            len = strlen ( aux->nome );
             //esta parte serve para identificar se os ultimos char sao numeros
             if (
                 aux->nome[len - 3] >= '0' &&
@@ -230,120 +191,103 @@ int nomecheck(global *info, char *cliente, cltusr *aux)
                 aux->nome[len - 2] >= '0' &&
                 aux->nome[len - 2] <= '9' &&
                 aux->nome[len - 1] >= '0' &&
-                aux->nome[len - 1] <= '9')
-            {
+                aux->nome[len - 1] <= '9' ) {
                 numchar[0] = aux->nome[len - 3];
                 numchar[1] = aux->nome[len - 2];
                 numchar[2] = aux->nome[len - 1];
-                numint = atoi(numchar);
-                fprintf(stderr, "aux->nome = %s; numint = %d\n", aux->nome, numint);
-                if (numint < 999)
-                {
-                    sprintf(numchar, "%03d", ++numint);
-                    fprintf(stderr, "numchar = %s\n", numchar);
+                numint = atoi ( numchar );
+                if ( info->debug == 1 )
+                    fprintf ( stderr, "aux->nome = %s; numint = %d\n", aux->nome, numint );
+                if ( numint < 999 ) {
+                    sprintf ( numchar, "%03d", ++numint );
+                    if ( info->debug == 1 )
+                    fprintf ( stderr, "numchar = %s\n", numchar );
                     aux->nome[len - 3] = numchar[0];
                     aux->nome[len - 2] = numchar[1];
                     aux->nome[len - 1] = numchar[2];
                 }
 
-                else
-                {
-                    fd = open(cliente, O_WRONLY);
-                    if (fd == -1)
-                    {
-                        kill(aux->pid, SIGINT);
-                    }
-                    else
-                    {
+                else {
+                    fd = open ( cliente, O_WRONLY );
+                    if ( fd == -1 ) {
+                        kill ( aux->pid, SIGINT );
+                    } else {
                         erro = INVALID_CLIENT_NAME;
-                        write(fd, (void *)&erro, sizeof(int));
-                        close(fd);
+                        write ( fd, ( void * ) &erro, sizeof ( int ) );
+                        close ( fd );
                     }
                 }
-            }
-            else
-            {
-                strcat(aux->nome, "001");
+            } else {
+                strcat ( aux->nome, "001" );
             }
         }
         actual = actual->prox;
     }
-    return 0;
+pthread_exit();
+    
 }
 
-void intapagaclientes(global *info)
-{
-    if (info->listclientes != NULL)
-    {
+void intapagaclientes ( global *info ) {
+    if ( info->listclientes != NULL ) {
         cltusr *aux = info->listclientes->prox, *auxant = info->listclientes;
 
-        while (aux != NULL)
-        {
+        while ( aux != NULL ) {
             auxant = aux;
             aux = auxant->prox;
         }
         aux = auxant;
-        while (auxant != NULL)
-        {
+        while ( auxant != NULL ) {
             aux = auxant;
             auxant = auxant->ant;
-            free(aux);
+            free ( aux );
         }
     }
 }
 
-void freethings(global *info)
-{
-    printf("verificar o info --FREETHINGS-- \n");
-    printf("info->cpid %d", info->cpid);
-    printf("end da verifcacao\n");
+void freethings ( global *info ) {
+    printf ( "verificar o info --FREETHINGS-- \n" );
+    printf ( "info->cpid %d", info->cpid );
+    printf ( "end da verifcacao\n" );
     info->terminate = 1;
-    pthread_cancel(info->read_fifo);
-    pthread_join(info->read_fifo, NULL);
-    if (info != NULL)
-    {
-        killverifica(info->cpid);
-        if (info->listclientes != NULL)
-        {
+    pthread_cancel ( info->read_fifo );
+    pthread_join ( info->read_fifo, NULL );
+    if ( info != NULL ) {
+        killverifica ( info->cpid );
+        if ( info->listclientes != NULL ) {
             cltusr *auxc = info->listclientes, *proxauxc;
             proxauxc = auxc->prox;
-            while (auxc)
-            {
-                kill(auxc->pid, SIGINT);
-                free(auxc);
+            while ( auxc ) {
+                kill ( auxc->pid, SIGINT );
+                free ( auxc );
                 auxc = proxauxc;
-                if (auxc)
+                if ( auxc )
                     proxauxc = auxc->prox;
             }
         }
-        if (info->listtopicos)
-        {
+        if ( info->listtopicos ) {
             tpc *auxt = info->listtopicos, *proxauxt;
             msg *auxm, *proxauxm;
             proxauxt = auxt->prox;
-            while (auxt)
-            {
-                if (auxt->primsg)
-                {
+            while ( auxt ) {
+                if ( auxt->primsg ) {
                     auxm = auxt->primsg;
                     proxauxm = auxm->prox;
-                    while (auxm)
-                    {
-                        free(auxm);
+                    while ( auxm ) {
+                        free ( auxm );
                         auxm = proxauxm;
-                        if (auxm)
+                        if ( auxm )
                             proxauxm = auxm->prox;
                     }
                 }
-                free(auxt);
+                free ( auxt );
                 auxt = proxauxt;
-                if (auxt)
+                if ( auxt )
                     proxauxt = auxt->prox;
             }
         }
-        free(info);
+        free ( info );
         info = NULL;
     }
-    unlink(GESTORFIFO);
-    exit(0);
+    unlink ( GESTORFIFO );
+    exit ( 0 );
 }

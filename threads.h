@@ -18,5 +18,5 @@ void freethings(global * info);
 int nomecheck(global *info, char *cliente, cltusr *aux);
 
 //remove um cliente da lista de clientes
-void removecliente(global * info, int pid);
+void removecliente(void * input);
 #endif //THREADS_H

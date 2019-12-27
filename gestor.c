@@ -60,10 +60,10 @@ int welcome() {
 int fhelp() {
     welcome();
     printf ( "trabalho feito por:\n"
-        "\tJoão Gonçalves 21280302\n"
-        "\tJoão Lopes     21270423\n"
-    );
-    
+             "\tJoão Gonçalves 21280302\n"
+             "\tJoão Lopes     21270423\n"
+           );
+
     return 0;
 };
 
@@ -82,7 +82,7 @@ int main ( int argc, char **argv ) {
         printf ( "Um gestor já esta a correr neste diretorio.\n" );
         return 5;
     }
-    
+
     char wordsnot[100];
 
     getvars ( &maxmsg, &maxnot, wordsnot, &maxtimeout, &maxusers );
@@ -133,9 +133,9 @@ int main ( int argc, char **argv ) {
 
     ///////////////////////////////////////////
     /////////////////////VERIFICADOR///////////
-
-    if ( ( erro = initverifica ( "verificador", wordsnot, & ( info->rcv ), & ( info->env ), & ( info->cpid ) ) ) != 0 )
-        return erro;
+    if ( filter == 1 )
+        if ( ( erro = initverifica ( "verificador", wordsnot, & ( info->rcv ), & ( info->env ), & ( info->cpid ) ) ) != 0 )
+            return erro;
 
     ////////////////////////////////////////////////
     //////////criacao do fifo do gestor/////////////
@@ -146,7 +146,7 @@ int main ( int argc, char **argv ) {
     ////////////////////COMAND LINE////////
     welcome();
     cmd ( info );
-    
+
 
     ///////////////////////////////////////
     /////////ENCERRAMENTO DE TUDO//////////

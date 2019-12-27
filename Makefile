@@ -32,3 +32,4 @@ debug: all
 clear:
 	rm -f *.o $(CLIENTEOUT) $(GESTOROUT) verificador
 	./rmfifos 1
+gestor.c
