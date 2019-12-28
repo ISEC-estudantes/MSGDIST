@@ -4,7 +4,7 @@ MSGDIST.kdev4
 .kdev4
 .vscode
 *.kate-swp
-extra/
+extras/
 verificador
 gestor
 cliente
