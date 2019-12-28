@@ -1,5 +1,5 @@
-#include "utils.h"
-#include "comand.h"
+#include "./headers/utils.h"
+#include "./headers/comand.h"
 
 int cmd ( global *info ) {
     cltusr *aux;
@@ -51,7 +51,17 @@ int cmd ( global *info ) {
                     printf ( "tem %s palavras proibidas na sua frase\n", raw );
                 }
             } else if ( strcmp ( cmd[0], "filter" ) == 0 || strcmp ( cmd[0], "f" ) == 0 ) {
-                printf ( "\tEste comando ainda nao esta implementado.\n" );
+                if (ncmd > 2){
+                    printf("tem argumentos a mais");
+                }
+                if (ncmd = 2){
+                    if(strcmp(cmd[1], "on")){
+                        info->filter=1;
+                    }
+                    if(strcmp(cmd[1], "off")){
+                        info->filter=0;
+                    }
+                }
             } else if ( strcmp ( cmd[0], "users" ) == 0 || strcmp ( cmd[0], "us" ) == 0 ) {
                 if ( info->listclientes ) {
                     counter = 0;

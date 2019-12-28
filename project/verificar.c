@@ -1,5 +1,5 @@
-#include "utils.h"
-#include "verificar.h"
+#include "./headers/utils.h"
+#include "./headers/verificar.h"
 
 //verifica - liga o verificador
 //comando-nome do verificador;

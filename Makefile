@@ -1,7 +1,7 @@
-GESTOROBS = gestor.o verificar.o utils.o comand.o threads.o
+GESTOROBS = ./project/gestor.o ./project/verificar.o ./project/utils.o ./project/comand.o ./project/threads.o
 GESTOROUT = gestor
 
-CLIENTEOBS = cliente.o
+CLIENTEOBS = ./project/cliente.o ./project/utils.o
 CLIENTEOUT = cliente
 
 CFLAGS += -lncurses -lpthread
@@ -10,8 +10,8 @@ default: debug
 
 all: $(GESTOROUT)  $(CLIENTEOUT) verificador
 
-verificador: verificador.c
-	$(CC) verificador.c -o verificador $(CFLAGS)
+verificador: ./project/verificador.c
+	$(CC) ./project/verificador.c -o verificador $(CFLAGS)
 
 $(CLIENTEOUT):$(CLIENTEOBS)
 	$(CC) $(CLIENTEOBS) -o $(CLIENTEOUT) $(CFLAGS)
@@ -30,6 +30,5 @@ debug: all
 
 
 clear:
-	rm -f *.o $(CLIENTEOUT) $(GESTOROUT) verificador
-	./rmfifos 1
-gestor.c
+	rm -f ./project/*.o $(CLIENTEOUT) $(GESTOROUT) verificador
+	find . -type p -delete

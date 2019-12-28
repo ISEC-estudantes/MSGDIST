@@ -1,9 +1,11 @@
-*.o
+MSGDIST.kdev4
+.git
+.gitignore
+.kdev4
+.vscode
+*.kate-swp
+./projects/extra
 verificador
 gestor
 cliente
-*.kdev4
-.kdev4/**
-.vscode
-.idea
-teststrlen*
+*.o

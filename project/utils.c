@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "./headers/utils.h"
 
 
 
@@ -77,7 +77,7 @@ int getoption ( int argc, char **argv, int *filter, int *cmd,int * help, int * d
           break;
         //desactivar o cmdline
         case 'c':
-          *cmd = 1;
+          *cmd = 0;
           break;
         //mostrar o help menu
         case 'h':

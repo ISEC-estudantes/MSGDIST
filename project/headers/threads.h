@@ -9,7 +9,7 @@
 void readingfifo(void * input);
 
 //adiciona um cliente novo
-void addcliente(void* received);
+void addcliente(void* input);
 
 //liberta a memoria do programa
 void freethings(global * info);

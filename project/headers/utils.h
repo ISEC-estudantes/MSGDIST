@@ -37,7 +37,7 @@ struct _global{
     unsigned int lasttopicid,lastmsgid; 
     
     //variaveis globais
-    unsigned int debug, maxmsg, maxnot, maxtimeout, maxusers;
+    unsigned int debug, maxmsg, maxnot, maxtimeout, maxusers, filter;
     char * wordsnot;
 
     //pid do verificador
@@ -51,6 +51,10 @@ struct _global{
 
     //thread handlears
     pthread_t read_fifo;
+    
+    //valores temporariso para usar
+    int tempint;//um valor int
+    void * temppointer;//um ponteiro para usar
 };
 
                 //defenicoes de default

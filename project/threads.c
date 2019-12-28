@@ -1,17 +1,12 @@
-#include "threads.h"
-#include "verificar.h"
+#include "./headers/threads.h"
+#include "./headers/verificar.h"
 
 typedef struct _sendthings sendthings;
-struct _sendthings {
-    global *info;
-    void *temporary;
-};
+
 
 void readingfifo ( void *input ) {
-    sendthings temp;
     pthread_t handler_creat;
     global *info = ( global * ) input;
-    temp.info = info;
     int gestorfifo = open ( GESTORFIFO, O_RDWR ), recebe, n, loop = 0;
     gestorfifo = open ( GESTORFIFO, O_RDONLY );
     int lixofifo = open ( GESTORFIFO, O_WRONLY );
@@ -21,7 +16,7 @@ void readingfifo ( void *input ) {
     }
     unsigned int pid;
 
-    cltusr addclientestruct, *auxc, *antauxc, *proxauxc;
+    cltusr addclientestruct;// *auxc, *antauxc, *proxauxc;
     while ( info->terminate != 1 ) {
         //close(gestorfifo);
         if ( info->debug == 1 )
@@ -46,15 +41,15 @@ void readingfifo ( void *input ) {
             read ( gestorfifo, ( void * ) &addclientestruct, sizeof ( cltusr ) );
             if ( info->debug == 1 )
                 printf ( "cliente -> nome = %s\n", addclientestruct.nome );
-            temp.temporary = ( void * ) &addclientestruct;
-            pthread_create ( &handler_creat, NULL, ( void * ) addcliente, ( void * ) &temp );
-            //addcliente((void *)&temp);
+            info->temppointer = ( void * ) &addclientestruct;
+            pthread_create ( &handler_creat, NULL, ( void * ) addcliente, ( void * ) &info );
+            //addcliente((void *)&info);
         } else if ( recebe == CLOSING_CLIENT ) {
             read ( gestorfifo, ( void * ) &pid, sizeof ( int ) );
             if ( info->debug == 1 )
                 printf ( "cliente a fechar\n" );
-            temp.temporary = ( void * ) &pid;
-            pthread_create ( &handler_creat, NULL, ( void * ) removecliente, ( void* ) &temp );
+            info->tempint = pid;
+            pthread_create ( &handler_creat, NULL, ( void * ) removecliente, ( void* ) &info );
         } else if ( recebe == 0 ) {
             printf ( "recebemos 0\n" );
         }
@@ -64,9 +59,8 @@ void readingfifo ( void *input ) {
 
 void removecliente ( void * input ) {
     //receber coisas
-    sendthings *temp = ( sendthings * ) input;
-    global * info = temp->info;
-    int pid = * ( ( int * ) temp->temporary );
+    global * info = (global *)input;
+    int pid = info->tempint;
 
     cltusr *auxc, *proxauxc, *antauxc;
     if ( info->listclientes ) {
@@ -94,10 +88,10 @@ void removecliente ( void * input ) {
     }
 }
 
-void addcliente ( void *received ) {
-    sendthings *utils = ( ( sendthings * ) received );
-    global *info = utils->info;
-    cltusr *addclientestruct = ( ( cltusr * ) utils->temporary );
+void addcliente ( void *input ) {
+    
+    global *info = (global *)input;
+    cltusr *addclientestruct = ( ( cltusr * ) info->temppointer);
 
     cltusr *aux = info->listclientes, *antaux = NULL;
     int fd, erro;
@@ -168,7 +162,8 @@ void addcliente ( void *received ) {
         if ( fd == -1 ) {
             printf ( "Problemas a contactar o cliente... a terminar lo.\n" );
             kill ( addclientestruct->pid, SIGINT );
-            removecliente ( info, addclientestruct->pid );
+            info->tempint = addclientestruct->pid ;
+            removecliente ( (void*)info);
         }
         write ( fd, ( void * ) &erro, sizeof ( int ) );
         write ( fd, ( void * ) &addclientestruct->nome, sizeof ( char ) * 256 );
@@ -223,7 +218,7 @@ int nomecheck ( global *info, char *cliente, cltusr *aux ) {
         }
         actual = actual->prox;
     }
-pthread_exit();
+    return 0;
     
 }
 
