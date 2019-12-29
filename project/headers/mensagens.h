@@ -3,6 +3,17 @@
 
 #include "utils.h"
 
+/*
+ * Trabalho de SO 2019 ISEC
+ * 
+ * Trabalho feito:
+ *   João Gonçalves 21280302
+ *   João Lopes     21270423
+ * 
+*/
+//ALL - GENERIC TPC AND MSG MANAGEMENT
+
+
 //variaveis de contagem
 
 typedef struct _tpc tpc;
@@ -18,10 +29,11 @@ struct _tpc{
     char nome[50];
 
     //ponteiro para a primeira mensagem
-    msg * primsg;
+    msg * primsg, *lastmsg;
+    pthread_mutex_t lock_msg;
 
     //ponteiro para o topico anterior
-    tpc * ant;
+    //tpc * ant;
 
     //ponteiro para o topico seguinte
     tpc * prox;
@@ -39,27 +51,36 @@ struct _msg{
     //msgid
     int msgid;
 
-    //ponteiro para o topico da mensagem
-     tpc * topico;
-
-    //nao opbrigatorio?
+    //topico da mensagem
+     tpc * topicopointer;//ponteiro
+     int topicoid;//id
+     
+    //nao opbrigatorio
     char  titulo[50];
 
     //corpo da mensagem
-    char * corpo[1000];
+    char corpo[1000];
 
-    //tempo maximo que a mensagem fica guardada(tempo em segundos)
-    int duracao;
-
+    //data e hora em que a mensagem foi enviada
+    time_t sent;
+    
+    //tempo em que a mensagem deve ser apagada
+    time_t deleted;
+    
     //quem enviou
-    cltusr * author;
+    pid_t authorpid;//id
+    cltusr * authorpointer;//ponteiro
     
     //mensagem anterior
-    msg * ant;
+    //msg * ant;
 
     //proxima mensagem
     msg * prox;
+    
+    
 
 };
+
+
 
 #endif

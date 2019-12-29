@@ -1,5 +1,5 @@
-#ifndef EDITOR_H
-#define EDITOR_H
+#ifndef CVRF_H
+#define CVRF_H
 
 /*
  * Trabalho de SO 2019 ISEC
@@ -9,8 +9,8 @@
  *   João Lopes     21270423
  * 
 */
-//CLIENTE - MSG EDITOR THREAD(S)
+//GESTOR - VIRIFICADOR RELATED FUNCTIONS
 
-#include "utils.h"
 
-#endif //EDITOR_H
+
+#endif //CVRF_H

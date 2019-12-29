@@ -1,12 +1,13 @@
-/*Trabalho de SO 2019 ISEC
-
-Trabalho feito:
-  João Gonçalves 21280302
-  João Lopes     21270423
-
+/*
+ * Trabalho de SO 2019 ISEC
+ * 
+ * Trabalho feito:
+ *   João Gonçalves 21280302
+ *   João Lopes     21270423
+ * 
 */
 //CLIENTE - MAIN
-//fazer um gui
+
 
 #include "./headers/utils.h"
 
@@ -68,15 +69,19 @@ int main(int argc, char **argv)
     */
     //a minha implementaçao de um verificador de opcoes e valores nos argumento
     cltusr myinfo;
-    myinfo.ant = myinfo.prox = NULL;
+    myinfo.prox = NULL;
     char pidchar[10];
     myinfo.pid = getpid();
-    myinfo.prox = myinfo.ant = NULL;
     sprintf(pidchar, "%d", myinfo.pid);
     int i, ff_cliente, ff_gestor, debug = 0,  help = 0, error, ff_lixo;
 
     error = getoption(argc, argv, &error, &error, &help, &debug);
     
+    info = malloc(sizeof(global));
+    if(info == NULL){
+        printf("Falta de memoria livre na RAM.\n");
+        exit(128);
+    }
     if (2 > argc) {
         printf("digite o seu nome: ");
         fflush(stdout);

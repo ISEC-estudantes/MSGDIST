@@ -1,6 +1,18 @@
 #ifndef COMAND_H
 #define COMAND_H
 
+/*
+ * Trabalho de SO 2019 ISEC
+ * 
+ * Trabalho feito:
+ *   João Gonçalves 21280302
+ *   João Lopes     21270423
+ * 
+*/
+//GESTOR - COMAND LINE THREAD FUNCTIONS
+
+#include "utils.h"
+
 int cmd();
 
 #endif //COMAND_H

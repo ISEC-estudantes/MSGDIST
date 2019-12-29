@@ -1,19 +1,20 @@
 /*
-Trabalho de SO 2019 ISEC
-
-Trabalho feito:
-  João Gonçalves 21280302
-  João Lopes     21270423
+ * Trabalho de SO 2019 ISEC
+ *
+ * Trabalho feito:
+ *   João Gonçalves 21280302
+ *   João Lopes     21270423
+ *
 */
-
 //GESTOR - MAIN
 
 #include "./headers/utils.h"
 #include "./headers/verificar.h"
-#include "./headers/threads.h"
+#include "./headers/gfrt.h"
 #include "./headers/comand.h"
 
-global *info = NULL;
+global * info = NULL;
+
 
 void exitChild()
 {
@@ -21,8 +22,7 @@ void exitChild()
     int erro = 0;
 
     waitpid(info->cpid, &erro, 0);
-    switch (WEXITSTATUS(erro))
-    {
+    switch (WEXITSTATUS(erro)) {
     case 2:
         printf("\nO ficheiro das palavras proibidas não existe\n");
         exit(2);
@@ -42,8 +42,7 @@ void exitChild()
 
 void exitNow()
 {
-    if (info->debug == 1)
-    {
+    if (info->debug == 1) {
         printf("verificar o info --EXITNOW-- \n");
         printf("info->cpid %d", info->cpid);
         printf("end da verifcacao\n");
@@ -79,14 +78,12 @@ int main(int argc, char **argv)
 
     getoption(argc, argv, &filter, &ocmd, &help, &debug);
 
-    if (help == 1)
-    {
+    if (help == 1) {
         fhelp();
         exit(0);
     }
 
-    if (access(GESTORFIFO, R_OK) != -1)
-    {
+    if (access(GESTORFIFO, R_OK) != -1) {
         printf("Um gestor já esta a correr neste diretorio.\n");
         return 5;
     }
@@ -106,23 +103,15 @@ int main(int argc, char **argv)
     //////////////////////////////////////////////
     ///////////////////CRIACAO DO GLOBAL info/////
 
-    info = (global *)malloc(sizeof(global));
-    if (info == NULL)
-    {
-        printf("problemas a allocar memoria ma boy.\n");
-    }
-    info->nclientes = info->ntopicos = 0;
-    info->listclientes = NULL;
-    info->listtopicos = NULL;
+    info = initinfo();
+
+    info->filter = filter;
     info->debug = debug;
     info->maxmsg = maxmsg;
     info->maxnot = maxnot;
     info->maxtimeout = maxtimeout;
     info->maxusers = maxusers;
     info->wordsnot = wordsnot;
-    info->cpid = 0;
-    info->terminate = 0;
-    info->filter = filter;
 
     ////////////////////////////////////////////////
     ///////////////////tratamento de sinais/////////
@@ -135,8 +124,7 @@ int main(int argc, char **argv)
     //////////////CRIACAO DAS PIPES/////////////////
 
     erro = mkfifo(GESTORFIFO, 0666);
-    if (erro == -1)
-    {
+    if (erro == -1) {
         printf("erro a criar o fifo\n");
         return -2;
     }
@@ -150,9 +138,16 @@ int main(int argc, char **argv)
     //////////criacao do fifo do gestor/////////////
 
     pthread_create(&(info->read_fifo), NULL, (void *)readingfifo, (void *)info);
+    
+    ////////////////////////////////////////////////
+    //////////////////START TIMER///////////////////
 
-    ///////////////////////////////////////
-    ////////////////////COMAND LINE////////
+    //pthread_create(&(info->timer), NULL, (void*)msgdeleter, (void*)info);
+
+    /////////////////////////////////////////////////
+    ////////////////////COMAND LINE//////////////////
+    
+    //msgdeleter(info);
     welcome();
     cmd(info);
 

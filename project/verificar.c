@@ -1,4 +1,14 @@
-#include "./headers/utils.h"
+/*
+ * Trabalho de SO 2019 ISEC
+ * 
+ * Trabalho feito:
+ *   João Gonçalves 21280302
+ *   João Lopes     21270423
+ * 
+*/
+//GESTOR - VIRIFICADOR RELATED FUNCTIONS
+
+
 #include "./headers/verificar.h"
 
 //verifica - liga o verificador
@@ -74,8 +84,8 @@ int verificamsg ( int env, int rcv, char * msg ) {
 
 }
 
-void killverifica ( int pid ) {
-    kill ( pid, SIGUSR2 );
+void killverifica ( int pid ) { 
+    kill(pid, SIGUSR2);
     wait ( &pid );
 }
 

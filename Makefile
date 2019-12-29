@@ -1,7 +1,7 @@
-GESTOROBS = ./project/gestor.o ./project/verificar.o ./project/utils.o ./project/comand.o ./project/threads.o
+GESTOROBS = ./project/gestor.o ./project/verificar.o ./project/utils.o ./project/comand.o ./project/gfrt.o ./project/cltusr.c
 GESTOROUT = gestor
 
-CLIENTEOBS = ./project/cliente.o ./project/utils.o
+CLIENTEOBS = ./project/cliente.o ./project/utils.o ./project/cltusr.c
 CLIENTEOUT = cliente
 
 CFLAGS += -lncurses -lpthread

@@ -1,6 +1,20 @@
 #ifndef VERIFICAR_H
 #define VERIFICAR_H
-#pragma once
+
+
+/*
+ * Trabalho de SO 2019 ISEC
+ * 
+ * Trabalho feito:
+ *   João Gonçalves 21280302
+ *   João Lopes     21270423
+ * 
+*/
+//GESTOR - VIRIFICADOR RELATED FUNCTIONS
+
+#include "utils.h"
+
+
 //verifica - liga o verificador
 //comando-nome do verificador;
 //file_proividas-ficheiro com as palavras proibidas;

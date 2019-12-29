@@ -1,4 +1,14 @@
-#include "./headers/utils.h"
+/*
+ * Trabalho de SO 2019 ISEC
+ * 
+ * Trabalho feito:
+ *   João Gonçalves 21280302
+ *   João Lopes     21270423
+ * 
+*/
+//GESTOR - COMAND LINE THREAD FUNCTIONS
+
+
 #include "./headers/comand.h"
 
 int cmd ( global *info ) {

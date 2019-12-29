@@ -1,5 +1,4 @@
-#ifndef EDITOR_H
-#define EDITOR_H
+#include "./headers/mensagens.h"
 
 /*
  * Trabalho de SO 2019 ISEC
@@ -9,8 +8,6 @@
  *   João Lopes     21270423
  * 
 */
-//CLIENTE - MSG EDITOR THREAD(S)
+//ALL - GENERIC TPC AND MSG MANAGEMENT
 
-#include "utils.h"
 
-#endif //EDITOR_H
