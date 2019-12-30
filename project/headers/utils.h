@@ -50,6 +50,7 @@ struct _global {
     unsigned int nclientes, ntopicos;
     
     cltusr *listclientes , *lastclient;
+
     pthread_mutex_t lock_cltusr;
     
     tpc *listtopicos, *lasttopic;
@@ -177,5 +178,8 @@ void semmem();
 
 //inicializa o info com valores neutros
 global * initinfo();
+
+//initializa todos os valores a zero excepto os arrays de char
+pipemsg initpipemsg();
 
 #endif

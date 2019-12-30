@@ -25,19 +25,17 @@ int getvars(int *maxmsg, int *maxnot, char *wordsnot, int *maxtimeout, int *maxu
     int resultint;
 
     resultchar = getenv("MAXMSG");
-    resultint = atoi(resultchar);
-    if ((resultchar == NULL) || resultint < 0)
+    if (resultchar == NULL)
         *maxmsg = DEF_MAXMSG;
-    else
-        *maxmsg = resultint;
+    else if ((resultint = atoi(resultchar)) < 0)
+        * maxmsg = resultint;
 
 
     resultchar = getenv("MAXNOT");
-    resultint = atoi(resultchar);
-    if ((resultchar == NULL) || resultint < 0)
+    if (resultchar == NULL)
         *maxnot = DEF_MAXNOT;
-    else
-        *maxnot = resultint;
+    else if ((resultint = atoi(resultchar)) < 0)
+        * maxnot = resultint;
 
     resultchar = getenv("WORDSNOT");
     if (resultchar == NULL)
@@ -46,19 +44,17 @@ int getvars(int *maxmsg, int *maxnot, char *wordsnot, int *maxtimeout, int *maxu
         strcpy(wordsnot, resultchar);
 
     resultchar = getenv("MAXTIMEOUT");
-    resultint = atoi(resultchar);
-    if ((resultchar == NULL) || resultint < 0)
+    if (resultchar == NULL)
         *maxtimeout = DEF_MAXTIMEOUT;
-    else
-        *maxtimeout = resultint;
+    else if ((resultint = atoi(resultchar)) < 0)
+        * maxtimeout = resultint;
 
 
     resultchar = getenv("MAXUSERS");
-    resultint = atoi(resultchar);
-    if ((resultchar == NULL) || resultint < 0)
+    if (resultchar == NULL)
         *maxusers = DEF_MAXUSERS;
-    else
-        *maxusers = resultint;
+    else if ((resultint = atoi(resultchar)) < 0)
+        * maxusers = resultint;
 
 
     return 0;
@@ -107,9 +103,9 @@ void semmem()
 global *initinfo()
 {
 
-    global * info = (global *)malloc(sizeof(global));
+    global *info = (global *)malloc(sizeof(global));
     if (info == NULL) {
-        fprintf(stderr,"problemas a allocar memoria ma boy.\n");
+        fprintf(stderr, "problemas a allocar memoria ma boy.\n");
         exit(3);
     }
     info->nclientes = info->ntopicos = 0;
@@ -126,6 +122,15 @@ global *initinfo()
     info->filter = 0;
     pthread_mutex_init(&info->lock_cltusr, NULL);
     pthread_mutex_init(&info->lock_tpc, NULL);
-    
+
     return info;
+}
+
+pipemsg initpipemsg(){
+    pipemsg a;    
+    a.codigo = 0;
+    a.topicid = 0;
+    a.msgid = 0;
+    a.pid = 0;
+    return a;
 }

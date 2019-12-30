@@ -1,10 +1,10 @@
 /*
  * Trabalho de SO 2019 ISEC
- * 
+ *
  * Trabalho feito:
  *   João Gonçalves 21280302
  *   João Lopes     21270423
- * 
+ *
 */
 //CLIENTE - MAIN
 
@@ -21,20 +21,16 @@ void exitNow()
 
     sprintf(charpid, "%d", getpid());
     unlink(charpid);
-    int fd = open("gestor-fifo", O_WRONLY), erro = CLOSING_CLIENT, bytes;
+    pipemsg envrcb;
+    int fd = open("gestor-fifo", O_WRONLY), bytes;
     if (fd > 1) {
-
+        envrcb.codigo = CLOSING_CLIENT;
+        envrcb.pid = getpid();
         printf("exiting...\n");
-        bytes = write(fd, (void *) &erro, sizeof(int));
+        bytes = write(fd, (void *) &envrcb.codigo, sizeof(pipemsg));
         if (info->debug == 1)
-            printf("sent %d bytes with the value %d\n", bytes, erro);
+            printf("sent %d bytes with the value %d, pid = %d\n", bytes, envrcb.codigo, envrcb.pid);
 
-        erro = getpid();
-        bytes = write(fd, (void *) &erro, sizeof(int));
-        if (info->debug == 1) {
-            printf("sent %d bytes with the value %d\n", bytes, erro);
-            printf("messages sent\n");
-        }
         close(fd);
     } else {
         printf("problemas a abrir para mandar a mensagem de fechar.");
@@ -73,15 +69,22 @@ int main(int argc, char **argv)
     char pidchar[10];
     myinfo.pid = getpid();
     sprintf(pidchar, "%d", myinfo.pid);
-    int i, ff_cliente, ff_gestor, debug = 0,  help = 0, error, ff_lixo;
+    int i, ff_cliente, ff_gestor, debug = 0,  help = 0, error, fck, ff_lixo, bytes;
 
-    error = getoption(argc, argv, &error, &error, &help, &debug);
-    
-    info = malloc(sizeof(global));
-    if(info == NULL){
-        printf("Falta de memoria livre na RAM.\n");
-        exit(128);
+
+    error = getoption(argc, argv, &fck, &error, &help, &debug);
+    if (debug == 1) {
+        printf("MAIN-OPTIONS"
+               "fck = %d\n"
+               "help = %d\n"
+               "debug = %d\n"
+               , fck, help, debug
+              );
     }
+    info = initinfo();
+    info->debug = debug;
+
+
     if (2 > argc) {
         printf("digite o seu nome: ");
         fflush(stdout);
@@ -93,65 +96,82 @@ int main(int argc, char **argv)
             strcat(myinfo.nome, argv[i]);
         }
     }
+    if (fck == 1) {
+        ///////////////////////////////////////////////////////
+        ///////////////COMUNICACAO COM O GESTOR////////////////
 
-    ///////////////////////////////////////////criacao do fifo///////////////////////////////////////////////////////
 
-    signal(SIGINT, exitNow);
-    if (mkfifo(pidchar, 0666) != 0) {
-        printf("Unable to create a fifo");
-        exit(-1);
+        if (mkfifo(pidchar, 0666) != 0) {
+            printf("Unable to create a fifo");
+            exit(-1);
+        }
+        ff_cliente = open(pidchar, O_RDWR);
+        ff_cliente = open(pidchar, O_RDONLY);
+        ff_lixo = open(pidchar, O_WRONLY);
+        if (info->debug == 1)
+            fprintf(stdout, "fifo criado com sucesso\n");
+
+        //criar o pipemsg//
+
+        pipemsg envrcb = initpipemsg();
+
+        envrcb.codigo = ADD_CLIENT;
+        strcpy(envrcb.clientname, myinfo.nome);
+        envrcb.pid = myinfo.pid;
+
+
+        //escreve para o fifo servidor//
+
+        ff_gestor = open("gestor-fifo", O_WRONLY);
+        if (ff_gestor > -1) {
+            bytes = write(ff_gestor, (void *) &ff_gestor, sizeof(pipemsg));
+            if (info->debug == 1)
+                printf("sent %d bytes with the value %d, pid = %d\n", bytes, envrcb.codigo, envrcb.pid);
+
+        } else {
+            printf("O gestor nao esta em execucao.\n");
+            unlink(pidchar);
+            return 2;
+        }
+
+
+        //aguardar resposta
+
+        read(ff_cliente, &envrcb, sizeof(pipemsg));
+        if (envrcb.codigo == 0) {
+            printf("Connectado ao gestor, a iniciar ncurses...\n");
+            strcpy(myinfo.nome, envrcb.clientname);
+        } else if (envrcb.codigo == INVALID_CLIENT_MAX) {
+            printf("Maximo de clientes ligados ao gestor atingido, porfavor tente mais tarde.\n");
+            unlink(pidchar);
+            return 2;
+        } else if (envrcb.codigo == INVALID_CLIENT_NAME) {
+            printf("Existem 1000 pessoas com o mesmo nome do que tu, porfavor tenta algo mais original.\n");
+            unlink(pidchar);
+            return 2;
+        } else {
+            printf("Problemas no gestor, a desligar cliente.\n");
+            int temp = i;
+            char output[4];
+            strcpy(output, ((char *) &temp));
+            output[3] = '\0';
+
+            printf("MENSAGEM\n\tint = %d\n\t char = %s\n", i, output);
+            unlink(pidchar);
+            return 2;
+        }
     }
-    ff_cliente = open(pidchar, O_RDWR);
-    ff_cliente = open(pidchar, O_RDONLY);
-    ff_lixo = open(pidchar, O_WRONLY);
-    if (info->debug == 1)
-        fprintf(stdout, "fifo criado com sucesso\n");
-
-    //escreve para o fifo servidor//
-    i = ADD_CLIENT;
-    ff_gestor = open("gestor-fifo", O_WRONLY);
-    if (ff_gestor > -1) {
-        write(ff_gestor, (void *) &i, sizeof(int));
-        write(ff_gestor, (void *) &myinfo, sizeof(cltusr));
-        close(ff_gestor);
-    } else {
-        printf("O gestor nao esta em execucao.\n");
-        unlink(pidchar);
-        return 2;
-    }
-    //aguardar resposta
-    read(ff_cliente, &i, sizeof(int));
-
-    if (i == 0) {
-        printf("Connectado ao gestor, a iniciar ncurses...\n");
-        read(ff_cliente, (void *) &myinfo.nome, sizeof(char));
-    } else if (i == INVALID_CLIENT_MAX) {
-        printf("Maximo de clientes ligados ao gestor atingido, porfavor tente mais tarde.\n");
-        unlink(pidchar);
-        return 2;
-    } else if (i == INVALID_CLIENT_NAME) {
-        printf("Existem 1000 pessoas com o mesmo nome do que tu, porfavor tenta algo mais original.\n");
-        unlink(pidchar);
-        return 2;
-    } else  {
-        printf("Problemas no gestor, a desligar cliente.\n");
-        int temp = i;
-        char output[4];
-        strcpy(output, ((char *) &temp));
-        output[3] = '\0';
-
-        printf("MENSAGEM\n\tint = %d\n\t char = %s\n", i, output);
-        unlink(pidchar);
-        return 2;
-    }
-
-    /* - -  - - - - - - -  - - - - --  --  --  --  - - - - - - - -
-        EDITOR DE TEXTO
-     - - - - - -  - - - - - - - - - - - - - - - - - - - - --  -- - */
+    printf("O seu nome é %s.", myinfo.nome);
+    /* - -  - - - - - - -  - - - - --  --  --  --  - - - - - - - - -/
+    /                    EDITOR DE TEXTO                            /
+    /- - - - - -  - - - - - - - - - - - - - - - - - - - - --  -- - */
 
     initscr();
+
+////////////////TRATAMENTO DE SINAIS///////////////////
     signal(SIGINT, exitNow);
     signal(SIGPIPE, exitNow);
+///////////////////////////////////////////////////////
 
     printw("Bem vindo ao cliente.\n");
     getch();

@@ -64,7 +64,7 @@ int cmd ( global *info ) {
                 if (ncmd > 2){
                     printf("tem argumentos a mais");
                 }
-                if (ncmd = 2){
+                if (ncmd == 2){
                     if(strcmp(cmd[1], "on")){
                         info->filter=1;
                     }

@@ -19,10 +19,10 @@ void readingfifo(void *input)
 {
     //pthread_t handler_creat;
     global *info = (global *) input;
-    int gestorfifo = open(GESTORFIFO, O_RDWR);
-    pipemsg recebe;
+    int gestorfifo = open(GESTORFIFO, O_RDWR), bytes, lixofifo;
+    pipemsg recebe = initpipemsg();
     gestorfifo = open(GESTORFIFO, O_RDONLY);
-    int lixofifo = open(GESTORFIFO, O_WRONLY);
+    lixofifo = open(GESTORFIFO, O_WRONLY);
     if (gestorfifo < 0) {
         printf("erro[%d] a abrir o fifo.\n", gestorfifo);
         freethings(info);
@@ -30,12 +30,12 @@ void readingfifo(void *input)
     unsigned int pid;
 
     while (info->terminate != 1) {
-        //close(gestorfifo);
         if (info->debug == 1)
             printf("[THREAD_READINGFIFO] new round\n");
 
-        read(gestorfifo, (void *) &recebe, sizeof(pipemsg));
-
+        bytes = read(gestorfifo, (void *) &recebe, sizeof(pipemsg));
+        if (info->debug == 1)
+            printf("[THREAD_READINGFIFO] bytes recebidos =%d, codigo = %d, pid = %d \n", bytes, recebe.codigo, recebe.pid);
 
         if (recebe.codigo == ADD_CLIENT) {
             if (info->debug == 1)
@@ -62,7 +62,7 @@ void addcliente(global *info, pipemsg *recebe)
     int nclts, fd, erro = 0;
     char pidcliente_char[10];
     sprintf(pidcliente_char, "%d", recebe->pid);
-    pipemsg enviar;
+    pipemsg enviar = initpipemsg();
     pthread_mutex_lock(&info->lock_cltusr);
     nclts = info->nclientes;
     pthread_mutex_unlock(&info->lock_cltusr);
@@ -104,7 +104,7 @@ void addcliente(global *info, pipemsg *recebe)
         fd = open(pidcliente_char, O_WRONLY);
         if (fd == -1) {
             kill(recebe->pid, SIGINT);
-            
+
         }
         write(fd, (void *) recebe, sizeof(pipemsg));
         close(fd);
@@ -119,7 +119,7 @@ void addcliente(global *info, pipemsg *recebe)
         aux->pid = recebe->pid;
         aux->prox = NULL;
         ++ (info->nclientes);
-        
+
     } else {
         fd = open(pidcliente_char, O_WRONLY);
         if (fd == -1) {
@@ -146,9 +146,9 @@ void addcliente(global *info, pipemsg *recebe)
 
 char *nomecheck(global *info, char *cliente, int pid)
 {
-    int i, numint, len, fd, erro;
+    int i, numint, len, fd;
 
-    char numchar[3];
+    char numchar[4];
 
     //buscar todos os nomes para um array
     pthread_mutex_lock(&info->lock_cltusr);
@@ -179,11 +179,13 @@ char *nomecheck(global *info, char *cliente, int pid)
                 numchar[0] = nomes[i][len - 3];
                 numchar[1] = nomes[i][len - 2];
                 numchar[2] = nomes[i][len - 1];
+                numchar[3] = '\0';
                 numint = atoi(numchar);
                 if (info->debug == 1)
                     fprintf(stderr, "nomes[i] = %s; numint = %d\n", nomes[i], numint);
                 if (numint < 999) {
                     sprintf(numchar, "%03d", ++numint);
+                    numchar[3] = '\0';
                     if (info->debug == 1)
                         fprintf(stderr, "numchar = %s\n", numchar);
                     strcat(cliente, numchar);
@@ -196,7 +198,7 @@ char *nomecheck(global *info, char *cliente, int pid)
                     if (fd == -1) {
                         kill(pid, SIGINT);
                     } else {
-                        pipemsg enviar;
+                        pipemsg enviar = initpipemsg();
                         enviar.codigo = INVALID_CLIENT_NAME;
                         write(fd, (void *) &enviar, sizeof(pipemsg));
                         close(fd);
