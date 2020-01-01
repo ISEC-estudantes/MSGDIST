@@ -13,6 +13,8 @@
 
 #include "utils.h"
 
-int cmd();
+void * cmd ( void *input);
+
+void errokick();
 
 #endif //COMAND_H

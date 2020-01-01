@@ -3,14 +3,15 @@
 
 /*
  * Trabalho de SO 2019 ISEC
- * 
+ *
  * Trabalho feito:
  *   João Gonçalves 21280302
  *   João Lopes     21270423
- * 
+ *
 */
 //ALL - GENERIC INFORMATION
 
+#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -23,6 +24,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 //necessitam de bibliotecas extras
 #include <pthread.h> //adicionar no compilador -lpthread
@@ -45,19 +47,18 @@ typedef struct _pipemsg pipemsg;
 struct _global {
     //locker do que esta no info
     pthread_mutex_t lock_info;
-    
+
     //sobre as listas e estruturas
     unsigned int nclientes, ntopicos;
-    
-    cltusr *listclientes , *lastclient;
 
+    cltusr *listclientes;
     pthread_mutex_t lock_cltusr;
     
-    tpc *listtopicos, *lasttopic;
+    tpc *listtopicos;
     pthread_mutex_t lock_tpc;
-
+    
     //variaveis globais
-    unsigned int debug, maxmsg, maxnot, maxtimeout, maxusers, filter;
+    unsigned int debug, maxmsg, maxnot, maxtimeout, maxusers, filter, maxtopics;
     char *wordsnot;
 
     //pid do verificador
@@ -70,23 +71,36 @@ struct _global {
     int terminate;
 
     //thread handlears
-    pthread_t read_fifo;
-    pthread_t timer;
-    
+    pthread_t threads;
+
     //valores temporariso para usar
     int tempint;//um valor int
     void *temppointer; //um ponteiro para usar
+    
+    //myinfo do cliente cliente
+    int pid, fifo_cliente, fifo_gestor;
+    char nome[50];
+    
+
+    //gestao de janelas
+    WINDOW *notification, *notificationborder, *mainwin ;
+    int maxy, maxx;
+    
+    
+
+
 };
-
-
-
 
 //16 bytes de ints + 1150 bytes de chars = 1k164 bytes
 struct _pipemsg {
 
     //codigo id
     int codigo;
-    
+
+    //cliente que a emviou
+    pid_t pid;
+    char clientname[50];
+
     //id do topico
     int topicid;
     char topicname[50];
@@ -98,9 +112,6 @@ struct _pipemsg {
     //corpo da mensagem
     char corpo[1000];
 
-    //cliente que a emviou
-    pid_t pid;
-    char clientname[50];
 };
 
 
@@ -126,12 +137,17 @@ struct _pipemsg {
 //maximo de users que podem estar ligados ao gestor
 #define DEF_MAXUSERS 10
 
+//maximo numero de topicos
+#define DEF_MAXTOPICS 10
 
 
 
-                        //DEFENITIONS OF CODES
+
+//DEFENITIONS OF CODES
 
 
+//codigo de kick
+#define KICK 5
 
 //quando as defenicoes de criacao do cliente sao invalidas(provavelmente por causa do nome)
 #define INVALID_CLIENT_NAME -1
@@ -151,8 +167,18 @@ struct _pipemsg {
 //para enviar uma subrescricao
 #define SUBSCRITION 3
 
+//para enviar uma notificacao
+#define NOTIFICATION 5
+
+//enviado quando um cliente esta a fechar
+#define CLOSING_CLIENT 4
+
+
+
+
 //defined to say that the system is shuting down
 #define SHUTDOWN -100
+
 
 typedef struct _sub sub;
 
@@ -161,12 +187,11 @@ struct _sub {
 
 };
 
-#define CLOSING_CLIENT 4
 
 
 //vai buscar as variaveis de ambiente necessarias
 //se nao existirem vai substituir com os macros apresentados acima
-int getvars(int *maxmsg, int *maxnot, char *wordsnot, int *maxtimeout, int *maxusers);
+int getvars(int *maxmsg, int *maxnot, char *wordsnot, int *maxtimeout, int *maxusers, int *maxtopics);
 
 //funcao para ir buscar opcoes dos argumentos
 int getoption(int argc, char **argv, int *filter, int *cmd, int *help, int *debug);
@@ -177,7 +202,7 @@ void insere();
 void semmem();
 
 //inicializa o info com valores neutros
-global * initinfo();
+global *initinfo();
 
 //initializa todos os valores a zero excepto os arrays de char
 pipemsg initpipemsg();

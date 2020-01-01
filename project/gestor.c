@@ -13,7 +13,7 @@
 #include "./headers/gfrt.h"
 #include "./headers/comand.h"
 
-global * info = NULL;
+global *info = NULL;
 
 
 void exitChild()
@@ -74,7 +74,7 @@ int fhelp()
 int main(int argc, char **argv)
 {
     //filtrar palavras proibidas on/off
-    int filter = 0, ocmd = 1, help = 0, maxnot, maxmsg, erro, debug = 0, maxusers, maxtimeout;
+    int filter = 0, ocmd = 1, help = 0, maxnot, maxmsg, erro, debug = 0, maxusers, maxtimeout, maxtopics;
 
     getoption(argc, argv, &filter, &ocmd, &help, &debug);
 
@@ -82,15 +82,15 @@ int main(int argc, char **argv)
         fhelp();
         exit(0);
     }
-
+    
     if (access(GESTORFIFO, R_OK) != -1) {
         printf("Um gestor já esta a correr neste diretorio.\n");
         return 5;
     }
-
+    
     char wordsnot[100];
 
-    getvars(&maxmsg, &maxnot, wordsnot, &maxtimeout, &maxusers);
+    getvars(&maxmsg, &maxnot, wordsnot, &maxtimeout, &maxusers, &maxtopics);
 
     if (debug == 1)
         printf("maxmsg = %d\n"
@@ -137,23 +137,24 @@ int main(int argc, char **argv)
     ////////////////////////////////////////////////
     //////////criacao do fifo do gestor/////////////
 
-    pthread_create(&(info->read_fifo), NULL, (void *)readingfifo, (void *)info);
-    
+    pthread_create(&(info->threads), NULL, (void *)readingfifo, (void *)info);
+
     ////////////////////////////////////////////////
     //////////////////START TIMER///////////////////
 
-    //pthread_create(&(info->timer), NULL, (void*)msgdeleter, (void*)info);
+    //pthread_create(&(info->threads), NULL, (void*)msgdeleter, (void*)info);
 
     /////////////////////////////////////////////////
     ////////////////////COMAND LINE//////////////////
-    
+
     //msgdeleter(info);
     welcome();
-    cmd(info);
+    pthread_create(&(info->threads), NULL, (void *)cmd, (void *)info);
+
 
     ///////////////////////////////////////
     /////////ENCERRAMENTO DE TUDO//////////
-
+    pthread_join(info->threads, NULL);
     freethings(info);
 
     return 0;

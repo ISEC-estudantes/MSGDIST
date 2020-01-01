@@ -25,9 +25,9 @@ void readingfifo(void *input)
     lixofifo = open(GESTORFIFO, O_WRONLY);
     if (gestorfifo < 0) {
         printf("erro[%d] a abrir o fifo.\n", gestorfifo);
-        freethings(info);
+        pthread_cancel(info->threads);
+        pthread_join(info->threads, NULL);
     }
-    unsigned int pid;
 
     while (info->terminate != 1) {
         if (info->debug == 1)
@@ -42,10 +42,9 @@ void readingfifo(void *input)
                 printf("cliente -> nome = %s\n", recebe.clientname);
             addcliente(info, &recebe);
         } else if (recebe.codigo == CLOSING_CLIENT) {
-            read(gestorfifo, (void *) &pid, sizeof(int));
             if (info->debug == 1)
                 printf("cliente a fechar\n");
-            removebypid(info, pid);
+            removebypid(info, recebe.pid);
         } else if (recebe.codigo == SHUTDOWN) {
             //terminating....
             break;
@@ -98,54 +97,58 @@ void addcliente(global *info, pipemsg *recebe)
         if (nomecheck(info, recebe->clientname, recebe->pid) == NULL)
             return;
 
-    pthread_mutex_lock(&info->lock_cltusr);
-    cltusr *aux = info->listclientes;
-    if (nclts == 0) {
-        fd = open(pidcliente_char, O_WRONLY);
-        if (fd == -1) {
-            kill(recebe->pid, SIGINT);
 
-        }
-        write(fd, (void *) recebe, sizeof(pipemsg));
-        close(fd);
-        info->listclientes = (cltusr *) malloc(sizeof(cltusr));
-        if (!info->listclientes) {
-            semmem();
-            freethings(info);
-            return;
-        }
-        aux = info->listclientes;
-        strcpy(aux->nome, recebe->clientname);
-        aux->pid = recebe->pid;
-        aux->prox = NULL;
+    //enviar resposta
+
+    fd = open(pidcliente_char, O_WRONLY);
+    if (fd == -1) {
+        kill(recebe->pid, SIGINT);
+        return;
+    }
+
+    recebe->codigo = 0;
+    write(fd, (void *)recebe, sizeof(pipemsg));
+    if (info->debug == 1)
+        printf("[THREAD_READINGFIFO] bytes recebidos = checked, codigo = %d, pid = %d , nome = %s\n", recebe->codigo, recebe->pid, recebe->clientname);
+    close(fd);
+
+
+    //gestao de memoria
+
+    pthread_mutex_lock(&info->lock_cltusr);
+    cltusr *aux = (cltusr *) malloc(sizeof(cltusr));
+    if (!aux) {
+        semmem();
+        pthread_cancel(info->threads);
+    }
+    strcpy(aux->nome, recebe->clientname);
+    aux->pid = recebe->pid;
+    aux->prox = NULL;
+    if (nclts == 0) {
+
+        //caso ainda nao exista numgem
+
+        info->listclientes = aux;
         ++ (info->nclientes);
 
     } else {
-        fd = open(pidcliente_char, O_WRONLY);
-        if (fd == -1) {
-            printf("Problemas a contactar o cliente... a terminar lo.\n");
-            kill(recebe->pid, SIGINT);
-            return;
+        //caso existem mais
+        cltusr *last = getlastcltusr(info);
+        if (last) {
+            last->prox = aux;
+            ++ (info->nclientes);
         }
-        write(fd, (void *) recebe, sizeof(pipemsg));
-        close(fd);
-        info->lastclient->prox = malloc(sizeof(cltusr));
-        if (info->lastclient->prox) {
-            semmem();
-            freethings(info);
-        }
-        aux = info->lastclient->prox;
-        strcpy(aux->nome, recebe->clientname);
-        aux->pid = recebe->pid;
-        aux->prox = NULL;
-        info->lastclient = aux;
-        ++ (info->nclientes);
     }
+
     pthread_mutex_unlock(&info->lock_cltusr);
+    //fim de gestao
 }
 
 char *nomecheck(global *info, char *cliente, int pid)
 {
+    if (info->debug == 1)
+        printf("[THREAD ADD CLIENTE] verify name\n");
+
     int i, numint, len, fd;
 
     char numchar[4];
@@ -188,7 +191,9 @@ char *nomecheck(global *info, char *cliente, int pid)
                     numchar[3] = '\0';
                     if (info->debug == 1)
                         fprintf(stderr, "numchar = %s\n", numchar);
-                    strcat(cliente, numchar);
+                    cliente[len - 3] = numchar[0];
+                    cliente[len - 2] = numchar[1];
+                    cliente[len - 1] = numchar[2];
                 }
 
                 else {
@@ -215,19 +220,27 @@ char *nomecheck(global *info, char *cliente, int pid)
 
 void freethings(global *info)
 {
+    char pidchar[10];
+    int ff_cliente;
+    pipemsg envrcb = initpipemsg();
+    envrcb.codigo = SHUTDOWN;
     printf("verificar o info --FREETHINGS-- \n");
     printf("info->cpid %d", info->cpid);
     printf("end da verifcacao\n");
     info->terminate = 1;
-    pthread_cancel(info->read_fifo);
-    pthread_join(info->read_fifo, NULL);
     if (info != NULL) {
         killverifica(info->cpid);
         if (info->listclientes != NULL) {
             cltusr *auxc = info->listclientes, *proxauxc;
             proxauxc = auxc->prox;
             while (auxc) {
-                kill(auxc->pid, SIGINT);
+                sprintf(pidchar, "%d", auxc->pid);
+                ff_cliente = open(pidchar, O_RDONLY | O_NONBLOCK);
+                if (ff_cliente > -1) {
+                    write(ff_cliente, (void *)&envrcb, sizeof(envrcb));
+                } else {
+                    kill(auxc->pid, SIGINT);
+                }
                 free(auxc);
                 auxc = proxauxc;
                 if (auxc)

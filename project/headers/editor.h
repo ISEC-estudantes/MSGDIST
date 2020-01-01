@@ -13,4 +13,15 @@
 
 #include "utils.h"
 
+//base do ui para o cliente
+void ui(void *input);
+
+//opcoes para a mensagem
+void escrevermsg(global *info);
+
+//adiciona um topico
+void addtpcui(void * input);
+
 #endif //EDITOR_H
+
+

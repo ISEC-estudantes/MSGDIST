@@ -17,9 +17,7 @@ void insere()
     fflush(stdout);
 }
 
-
-
-int getvars(int *maxmsg, int *maxnot, char *wordsnot, int *maxtimeout, int *maxusers)
+int getvars(int *maxmsg, int *maxnot, char *wordsnot, int *maxtimeout, int *maxusers, int *maxtopics)
 {
     char *resultchar;
     int resultint;
@@ -29,6 +27,8 @@ int getvars(int *maxmsg, int *maxnot, char *wordsnot, int *maxtimeout, int *maxu
         *maxmsg = DEF_MAXMSG;
     else if ((resultint = atoi(resultchar)) < 0)
         * maxmsg = resultint;
+    else
+        *maxmsg = DEF_MAXMSG;
 
 
     resultchar = getenv("MAXNOT");
@@ -36,6 +36,8 @@ int getvars(int *maxmsg, int *maxnot, char *wordsnot, int *maxtimeout, int *maxu
         *maxnot = DEF_MAXNOT;
     else if ((resultint = atoi(resultchar)) < 0)
         * maxnot = resultint;
+    else
+        *maxmsg = DEF_MAXNOT;
 
     resultchar = getenv("WORDSNOT");
     if (resultchar == NULL)
@@ -48,6 +50,8 @@ int getvars(int *maxmsg, int *maxnot, char *wordsnot, int *maxtimeout, int *maxu
         *maxtimeout = DEF_MAXTIMEOUT;
     else if ((resultint = atoi(resultchar)) < 0)
         * maxtimeout = resultint;
+    else
+        *maxtimeout = DEF_MAXTIMEOUT;
 
 
     resultchar = getenv("MAXUSERS");
@@ -55,7 +59,16 @@ int getvars(int *maxmsg, int *maxnot, char *wordsnot, int *maxtimeout, int *maxu
         *maxusers = DEF_MAXUSERS;
     else if ((resultint = atoi(resultchar)) < 0)
         * maxusers = resultint;
-
+    else 
+        *maxusers = DEF_MAXUSERS;
+    
+    resultchar = getenv("MAXTOPICS");
+    if (resultchar == NULL)
+        *maxtopics = DEF_MAXTOPICS;
+    else if ((resultint = atoi(resultchar)) < 0)
+        *maxtopics = DEF_MAXTOPICS;
+    else 
+        *maxtopics = resultint;
 
     return 0;
 }
@@ -102,15 +115,14 @@ void semmem()
 
 global *initinfo()
 {
-
     global *info = (global *)malloc(sizeof(global));
     if (info == NULL) {
         fprintf(stderr, "problemas a allocar memoria ma boy.\n");
         exit(3);
     }
     info->nclientes = info->ntopicos = 0;
-    info->listclientes = info->lastclient = NULL;
-    info->listtopicos = info->lasttopic = NULL;
+    info->listclientes = NULL;
+    info->listtopicos = NULL;
     info->debug = 0;
     info->maxmsg = 0;
     info->maxnot = 0;
@@ -126,11 +138,15 @@ global *initinfo()
     return info;
 }
 
-pipemsg initpipemsg(){
-    pipemsg a;    
+pipemsg initpipemsg()
+{
+    pipemsg a;
     a.codigo = 0;
     a.topicid = 0;
     a.msgid = 0;
     a.pid = 0;
     return a;
 }
+
+
+

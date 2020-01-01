@@ -9,8 +9,11 @@
  *   João Lopes     21270423
  * 
 */
-//GESTOR - VIRIFICADOR RELATED FUNCTIONS
+//CLIENTE - VIRIFICADOR RELATED FUNCTIONS
 
+#include "utils.h"
+
+void readingfifo(void *input);
 
 
 #endif //CVRF_H

@@ -18,8 +18,7 @@
 
 typedef struct _tpc tpc;
 typedef struct _msg msg;
-//estrutura das mensagens
-//no total as mensagens so podem ter 1000 chars
+
 struct _tpc{
 
     //id do topico
@@ -46,6 +45,32 @@ struct _tpc{
 
 };
 
+
+
+struct tpcpointers {
+    tpc * antaux, *aux, *proxaux;
+};
+
+//adiciona um novo topico
+void addtpc(global *info, char *nome);
+
+//encontra topico pelo tid (topic id)
+tpc findbytid(global *info, struct tpcpointers *pointers, int tid);
+
+//vai buscar o ultimo topico, se nao existir returna null
+tpc *getlasttpc(global *info);
+
+//remove um topico pelo seu id, se ouverem mensagems ele nao ira apagar e ira returnar 0
+int removebytid(global *info, int tid);
+
+//verify if tid is available, returns 0 if it is, -1 if its not
+int verifytid(global * info, int tid);
+
+
+//MENSAGENS
+
+//estrutura das mensagens
+//no total as mensagens so podem ter 1000 chars
 struct _msg{
 
     //msgid
@@ -76,11 +101,14 @@ struct _msg{
 
     //proxima mensagem
     msg * prox;
-    
-    
 
 };
 
+struct msgpointers {
+    msg * antaux, *aux, *proxaux;
+};
 
+//vai buscar a ultima mensagem
+msg *getlastmsg(global *info);
 
 #endif

@@ -10,6 +10,8 @@
 
 
 #include "./headers/utils.h"
+#include "./headers/cfrt.h"
+#include "./headers/editor.h"
 
 global *info = NULL;
 
@@ -22,7 +24,7 @@ void exitNow()
     sprintf(charpid, "%d", getpid());
     unlink(charpid);
     pipemsg envrcb;
-    int fd = open("gestor-fifo", O_WRONLY), bytes;
+    int fd = open("gestor-fifo", O_WRONLY | O_NONBLOCK), bytes;
     if (fd > 1) {
         envrcb.codigo = CLOSING_CLIENT;
         envrcb.pid = getpid();
@@ -54,6 +56,7 @@ void welcome()
 
 void fhelp()
 {
+    
 }
 
 int main(int argc, char **argv)
@@ -64,12 +67,11 @@ int main(int argc, char **argv)
         VERIFICADOR DO USER
     */
     //a minha implementaçao de um verificador de opcoes e valores nos argumento
-    cltusr myinfo;
-    myinfo.prox = NULL;
+    info = initinfo();
     char pidchar[10];
-    myinfo.pid = getpid();
-    sprintf(pidchar, "%d", myinfo.pid);
-    int i, ff_cliente, ff_gestor, debug = 0,  help = 0, error, fck, ff_lixo, bytes;
+    info->pid = getpid();
+    sprintf(pidchar, "%d", info->pid);
+    int i, ff_cliente, ff_gestor, debug = 0,  help = 0, error = 0, fck = 0, ff_lixo, bytes = 0;
 
 
     error = getoption(argc, argv, &fck, &error, &help, &debug);
@@ -81,22 +83,22 @@ int main(int argc, char **argv)
                , fck, help, debug
               );
     }
-    info = initinfo();
-    info->debug = debug;
 
+    info->debug = debug;
+    info->filter = fck;
 
     if (2 > argc) {
         printf("digite o seu nome: ");
         fflush(stdout);
-        scanf("%99[^\n]", myinfo.nome);
+        scanf("%99[^\n]", info->nome);
     } else {
-        strcpy(myinfo.nome, argv[1]);
+        strcpy(info->nome, argv[1]);
         for (i = 2; i < argc; ++i) {
-            strcat(myinfo.nome, " ");
-            strcat(myinfo.nome, argv[i]);
+            strcat(info->nome, " ");
+            strcat(info->nome, argv[i]);
         }
     }
-    if (fck == 1) {
+    if (fck == 0) {
         ///////////////////////////////////////////////////////
         ///////////////COMUNICACAO COM O GESTOR////////////////
 
@@ -116,15 +118,16 @@ int main(int argc, char **argv)
         pipemsg envrcb = initpipemsg();
 
         envrcb.codigo = ADD_CLIENT;
-        strcpy(envrcb.clientname, myinfo.nome);
-        envrcb.pid = myinfo.pid;
+        strcpy(envrcb.clientname, info->nome);
+        envrcb.pid = info->pid;
 
 
         //escreve para o fifo servidor//
-
         ff_gestor = open("gestor-fifo", O_WRONLY);
+        printf(" ff_gestor = %d\n", ff_gestor);
         if (ff_gestor > -1) {
-            bytes = write(ff_gestor, (void *) &ff_gestor, sizeof(pipemsg));
+
+            bytes = write(ff_gestor, (void *) &envrcb, sizeof(pipemsg));
             if (info->debug == 1)
                 printf("sent %d bytes with the value %d, pid = %d\n", bytes, envrcb.codigo, envrcb.pid);
 
@@ -138,9 +141,11 @@ int main(int argc, char **argv)
         //aguardar resposta
 
         read(ff_cliente, &envrcb, sizeof(pipemsg));
+        if (info->debug == 1)
+            printf("sent %d bytes with the value %d, pid = %d\n", bytes, envrcb.codigo, envrcb.pid);
         if (envrcb.codigo == 0) {
             printf("Connectado ao gestor, a iniciar ncurses...\n");
-            strcpy(myinfo.nome, envrcb.clientname);
+            strcpy(info->nome, envrcb.clientname);
         } else if (envrcb.codigo == INVALID_CLIENT_MAX) {
             printf("Maximo de clientes ligados ao gestor atingido, porfavor tente mais tarde.\n");
             unlink(pidchar);
@@ -155,29 +160,49 @@ int main(int argc, char **argv)
             char output[4];
             strcpy(output, ((char *) &temp));
             output[3] = '\0';
-
-            printf("MENSAGEM\n\tint = %d\n\t char = %s\n", i, output);
             unlink(pidchar);
             return 2;
         }
     }
-    printf("O seu nome é %s.", myinfo.nome);
+    printf("O seu nome é %s.", info->nome);
+    
+    info->fifo_cliente =  ff_cliente;
+    info->fifo_gestor = ff_gestor;
     /* - -  - - - - - - -  - - - - --  --  --  --  - - - - - - - - -/
     /                    EDITOR DE TEXTO                            /
     /- - - - - -  - - - - - - - - - - - - - - - - - - - - --  -- - */
-
-    initscr();
-
 ////////////////TRATAMENTO DE SINAIS///////////////////
     signal(SIGINT, exitNow);
     signal(SIGPIPE, exitNow);
 ///////////////////////////////////////////////////////
 
-    printw("Bem vindo ao cliente.\n");
-    getch();
+    initscr();
+    cbreak();
+    noecho();
+    //buscar os maximos
+    getmaxyx(stdscr, info->maxy, info->maxx);
+    //criar as janelas
+    info->mainwin = newwin(info->maxy - 5, info->maxx, 0, 0);
+    info->notification = newwin(3, info->maxx, info->maxy - 3, 0);
+    info->notificationborder = newwin(1, info->maxx, info->maxy - 4, 0);
+    wprintw(info->notification, "O seu nome é %s.", info->nome );
+    wrefresh(info->notification);
+    //fazer a border entre o main win e as notificacoes
+    for (i = 0; i < info->maxx; ++i)
+        wprintw(info->notificationborder, "-");
+    wrefresh(info->notificationborder);
+    if (info->filter != 1)
+        pthread_create(&info->threads, NULL, (void *)readingfifo, (void *)info);
+
+
+    pthread_create(&info->threads, NULL, (void *)ui, (void *)info);
+
+
+
+    pthread_join(info->threads, NULL);
+
     endwin();
 
-    printf("Exiting...\n");
     exitNow();
     return 0;
 }
