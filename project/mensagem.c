@@ -36,7 +36,7 @@ void addtpc(global *info, char *nome)
         aux->prox = newtpc;
         int id = 0;
         while (verifytid(info, id++) == -1 || id != INT_MAX);
-        if (id == INT_MAX) {
+        if(id == INT_MAX){
             wclear(info->notification);
             wprintw(info->notification, "porque %d topicos?!\nERA SUPOSTO SER UM PEQUENO TRABALHO DE SO!!!!!", INT_MAX);
             wrefresh(info->notification);
@@ -96,15 +96,15 @@ msg *getlastmsg(global *info)
 
 int removebytid(global *info, int tid)
 {
-    pthread_mutex_lock(&info->lock_tpc);
+        pthread_mutex_lock(&info->lock_tpc);
 
     struct tpcpointers pointers ;
     findbytid(info, &pointers, tid);
     //verificar se tem mensagens
     if (pointers.aux->nmensagens == 0) {
-
+        
     }
-    pthread_mutex_unlock(&info->lock_tpc);
+        pthread_mutex_unlock(&info->lock_tpc);
 
 
 }
@@ -132,3 +132,4 @@ tpc findbytid(global *info, struct tpcpointers *pointers, int tid)
     anulado.topicid = 0;
     return anulado;
 }
+

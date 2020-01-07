@@ -274,3 +274,35 @@ void freethings(global *info)
     unlink(GESTORFIFO);
     exit(0);
 }
+
+void timerdeleter(void *input)
+{
+    global *info = (global *)input;
+    time_t rightnow = 0;
+    tpc *auxt = NULL;
+    msg *auxm = NULL, *antauxm;
+
+    while (1) {
+        sleep(1);
+        rightnow = time(NULL);
+        pthread_mutex_lock(&info->lock_tpc);
+        auxt = info->listtopicos;
+        while (auxt) {
+            auxm = auxt->primsg;
+            antauxm = NULL;
+            while (auxm) {
+                if (auxm->deleted == rightnow) {
+                    if (antauxm)
+                        antauxm->prox = auxm->prox;
+                    else
+                        auxt->primsg = auxm->prox;
+                    auxm = auxm->prox;
+                    --(auxt->nmensagens);
+                    free(auxm);
+                }
+                auxm = auxm->prox;
+            }
+        }
+        pthread_mutex_unlock(&info->lock_tpc);
+    }
+}

@@ -8,41 +8,14 @@
 */
 //CLIENTE - MAIN
 
-
 #include "./headers/utils.h"
 #include "./headers/cfrt.h"
 #include "./headers/editor.h"
 
 global *info = NULL;
 
-void exitNow()
-{
-    char charpid[10];
-    endwin();
-
-
-    sprintf(charpid, "%d", getpid());
-    unlink(charpid);
-    pipemsg envrcb;
-    int fd = open("gestor-fifo", O_WRONLY | O_NONBLOCK), bytes;
-    if (fd > 1) {
-        envrcb.codigo = CLOSING_CLIENT;
-        envrcb.pid = getpid();
-        printf("exiting...\n");
-        bytes = write(fd, (void *) &envrcb.codigo, sizeof(pipemsg));
-        if (info->debug == 1)
-            printf("sent %d bytes with the value %d, pid = %d\n", bytes, envrcb.codigo, envrcb.pid);
-
-        close(fd);
-    } else {
-        printf("problemas a abrir para mandar a mensagem de fechar.");
-        if (info->debug == 1)
-            printf("[ERRO=%d]\n", fd);
-        else
-            printf("\n");
-    }
-
-    exit(255);
+void exitNow(){
+    terminar(info);
 }
 
 void welcome()
@@ -56,7 +29,6 @@ void welcome()
 
 void fhelp()
 {
-    
 }
 
 int main(int argc, char **argv)
@@ -71,39 +43,43 @@ int main(int argc, char **argv)
     char pidchar[10];
     info->pid = getpid();
     sprintf(pidchar, "%d", info->pid);
-    int i, ff_cliente, ff_gestor, debug = 0,  help = 0, error = 0, fck = 0, ff_lixo, bytes = 0;
-
+    int i, ff_cliente, ff_gestor, debug = 0, help = 0, error = 0, fck = 0, ff_lixo, bytes = 0;
 
     error = getoption(argc, argv, &fck, &error, &help, &debug);
-    if (debug == 1) {
+    if (debug == 1)
+    {
         printf("MAIN-OPTIONS"
                "fck = %d\n"
                "help = %d\n"
-               "debug = %d\n"
-               , fck, help, debug
-              );
+               "debug = %d\n",
+               fck, help, debug);
     }
 
     info->debug = debug;
     info->filter = fck;
 
-    if (2 > argc) {
+    if (2 > argc)
+    {
         printf("digite o seu nome: ");
         fflush(stdout);
         scanf("%99[^\n]", info->nome);
-    } else {
+    }
+    else
+    {
         strcpy(info->nome, argv[1]);
-        for (i = 2; i < argc; ++i) {
+        for (i = 2; i < argc; ++i)
+        {
             strcat(info->nome, " ");
             strcat(info->nome, argv[i]);
         }
     }
-    if (fck == 0) {
+    if (info->filter == 0)
+    {
         ///////////////////////////////////////////////////////
         ///////////////COMUNICACAO COM O GESTOR////////////////
 
-
-        if (mkfifo(pidchar, 0666) != 0) {
+        if (mkfifo(pidchar, 0666) != 0)
+        {
             printf("Unable to create a fifo");
             exit(-1);
         }
@@ -121,89 +97,114 @@ int main(int argc, char **argv)
         strcpy(envrcb.clientname, info->nome);
         envrcb.pid = info->pid;
 
-
         //escreve para o fifo servidor//
         ff_gestor = open("gestor-fifo", O_WRONLY);
         printf(" ff_gestor = %d\n", ff_gestor);
-        if (ff_gestor > -1) {
+        if (ff_gestor > -1)
+        {
 
-            bytes = write(ff_gestor, (void *) &envrcb, sizeof(pipemsg));
+            bytes = write(ff_gestor, (void *)&envrcb, sizeof(pipemsg));
             if (info->debug == 1)
                 printf("sent %d bytes with the value %d, pid = %d\n", bytes, envrcb.codigo, envrcb.pid);
-
-        } else {
+        }
+        else
+        {
             printf("O gestor nao esta em execucao.\n");
             unlink(pidchar);
             return 2;
         }
-
 
         //aguardar resposta
 
         read(ff_cliente, &envrcb, sizeof(pipemsg));
         if (info->debug == 1)
             printf("sent %d bytes with the value %d, pid = %d\n", bytes, envrcb.codigo, envrcb.pid);
-        if (envrcb.codigo == 0) {
+        if (envrcb.codigo == 0)
+        {
             printf("Connectado ao gestor, a iniciar ncurses...\n");
             strcpy(info->nome, envrcb.clientname);
-        } else if (envrcb.codigo == INVALID_CLIENT_MAX) {
+        }
+        else if (envrcb.codigo == INVALID_CLIENT_MAX)
+        {
             printf("Maximo de clientes ligados ao gestor atingido, porfavor tente mais tarde.\n");
             unlink(pidchar);
             return 2;
-        } else if (envrcb.codigo == INVALID_CLIENT_NAME) {
+        }
+        else if (envrcb.codigo == INVALID_CLIENT_NAME)
+        {
             printf("Existem 1000 pessoas com o mesmo nome do que tu, porfavor tenta algo mais original.\n");
             unlink(pidchar);
             return 2;
-        } else {
+        }
+        else
+        {
             printf("Problemas no gestor, a desligar cliente.\n");
             int temp = i;
             char output[4];
-            strcpy(output, ((char *) &temp));
+            strcpy(output, ((char *)&temp));
             output[3] = '\0';
             unlink(pidchar);
             return 2;
         }
     }
-    printf("O seu nome é %s.", info->nome);
-    
-    info->fifo_cliente =  ff_cliente;
+    char lenonbre[50 + 11];
+    sprintf(lenonbre, "O seu nome é %s.", info->nome);
+    printf("%s\n", lenonbre);
+    info->fifo_cliente = ff_cliente;
     info->fifo_gestor = ff_gestor;
     /* - -  - - - - - - -  - - - - --  --  --  --  - - - - - - - - -/
     /                    EDITOR DE TEXTO                            /
     /- - - - - -  - - - - - - - - - - - - - - - - - - - - --  -- - */
-////////////////TRATAMENTO DE SINAIS///////////////////
+    //////////////// TRATAMENTO DE SINAIS ///////////////////
     signal(SIGINT, exitNow);
     signal(SIGPIPE, exitNow);
-///////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
 
     initscr();
     cbreak();
     noecho();
     //buscar os maximos
-    getmaxyx(stdscr, info->maxy, info->maxx);
+    getmaxyx(stdscr, info->maxy, info->maxx); //y - linhas
+    if (fck == 1)
+        printw("maxy = %d, maxx = %d", info->maxy, info->maxx);
+    refresh();
+
+    if (info->maxy < 15 || info->maxx < 100)
+    {
+        printw("O cliente se tiver no minimo 100 colunas e 15 linhas.\n");
+        printw("Pressione qualquer tecla para continuar...");
+        refresh();
+        getchar();
+        exitNow();
+    }
+
+    keypad(stdscr, true);
     //criar as janelas
-    info->mainwin = newwin(info->maxy - 5, info->maxx, 0, 0);
-    info->notification = newwin(3, info->maxx, info->maxy - 3, 0);
-    info->notificationborder = newwin(1, info->maxx, info->maxy - 4, 0);
-    wprintw(info->notification, "O seu nome é %s.", info->nome );
-    wrefresh(info->notification);
+    info->mainwin = newwin(10, info->maxx, 0, 0);
+    info->notification = newwin(3, info->maxx, 11, 0);
+    info->notificationborder = newwin(info->maxy - 11, info->maxx, 12, 0);
+
     //fazer a border entre o main win e as notificacoes
     for (i = 0; i < info->maxx; ++i)
         wprintw(info->notificationborder, "-");
     wrefresh(info->notificationborder);
+
+    wclear(info->notification);
+    wclear(info->mainwin);
+    wrefresh(info->notification);
+    wrefresh(info->mainwin);
+
+    newnot(info, lenonbre, info->maxy, info->maxx);
+
+    //printa o nome
+    wprintw(info->notification, "O seu nome é %s.", info->nome);
+    wrefresh(info->notification);
+    getchar();
+
     if (info->filter != 1)
         pthread_create(&info->threads, NULL, (void *)readingfifo, (void *)info);
-
-
     pthread_create(&info->threads, NULL, (void *)ui, (void *)info);
-
-
-
     pthread_join(info->threads, NULL);
-
-    endwin();
-
-    exitNow();
     return 0;
 }
 /// NOMES E FIFOS

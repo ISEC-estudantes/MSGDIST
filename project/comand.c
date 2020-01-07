@@ -121,9 +121,6 @@ void *cmd(void *input)
                     close(val);
                     
                     }
-                    
-                    
-
                 } else {
                     errokick();
                 }

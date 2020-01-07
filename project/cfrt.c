@@ -58,4 +58,32 @@ void readingfifo(void *input)
 }
 
 
+void terminar(global *info)
+{
+    char charpid[10];
+    endwin();
 
+
+    sprintf(charpid, "%d", getpid());
+    unlink(charpid);
+    pipemsg envrcb;
+    int fd = open("gestor-fifo", O_WRONLY | O_NONBLOCK), bytes;
+    if (fd > 1) {
+        envrcb.codigo = CLOSING_CLIENT;
+        envrcb.pid = getpid();
+        printf("exiting...\n");
+        bytes = write(fd, (void *) &envrcb.codigo, sizeof(pipemsg));
+        if (info->debug == 1)
+            printf("sent %d bytes with the value %d, pid = %d\n", bytes, envrcb.codigo, envrcb.pid);
+
+        close(fd);
+    } else {
+        printf("problemas a abrir para mandar a mensagem de fechar.");
+        if (info->debug == 1)
+            printf("[ERRO=%d]\n", fd);
+        else
+            printf("\n");
+    }
+
+    exit(255);
+}

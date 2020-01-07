@@ -25,11 +25,11 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <time.h>
 
 //necessitam de bibliotecas extras
 #include <pthread.h> //adicionar no compilador -lpthread
 #include <ncurses.h> //adicionar no compilador -lncurses
-
 
 ///strutura global
 typedef struct _global global;
@@ -40,11 +40,8 @@ typedef struct _pipemsg pipemsg;
 #include "cltusr.h"
 #include "mensagens.h"
 
-
-
-
-
-struct _global {
+struct _global
+{
     //locker do que esta no info
     pthread_mutex_t lock_info;
 
@@ -53,10 +50,10 @@ struct _global {
 
     cltusr *listclientes;
     pthread_mutex_t lock_cltusr;
-    
+
     tpc *listtopicos;
     pthread_mutex_t lock_tpc;
-    
+
     //variaveis globais
     unsigned int debug, maxmsg, maxnot, maxtimeout, maxusers, filter, maxtopics;
     char *wordsnot;
@@ -74,25 +71,24 @@ struct _global {
     pthread_t threads;
 
     //valores temporariso para usar
-    int tempint;//um valor int
+    int tempint;       //um valor int
     void *temppointer; //um ponteiro para usar
-    
+
     //myinfo do cliente cliente
     int pid, fifo_cliente, fifo_gestor;
     char nome[50];
-    
 
     //gestao de janelas
-    WINDOW *notification, *notificationborder, *mainwin ;
+    WINDOW *notification, *notificationborder, *mainwin;
+
+    //y - linhas
+    //x - colunas
     int maxy, maxx;
-    
-    
-
-
 };
 
 //16 bytes de ints + 1150 bytes de chars = 1k164 bytes
-struct _pipemsg {
+struct _pipemsg
+{
 
     //codigo id
     int codigo;
@@ -108,19 +104,14 @@ struct _pipemsg {
     //id da mensagem
     int msgid;
     //titulo da mensagem
-    char  titulo[50];
+    char titulo[50];
     //corpo da mensagem
     char corpo[1000];
-
 };
-
-
-
 
 //defenicoes de codigo de default
 //nome do fifo do gestor
 #define GESTORFIFO "gestor-fifo"
-
 
 //nome do file com as mensagens proibidas
 #define DEF_WORDSNOT "proibidas"
@@ -140,11 +131,7 @@ struct _pipemsg {
 //maximo numero de topicos
 #define DEF_MAXTOPICS 10
 
-
-
-
 //DEFENITIONS OF CODES
-
 
 //codigo de kick
 #define KICK 5
@@ -173,21 +160,15 @@ struct _pipemsg {
 //enviado quando um cliente esta a fechar
 #define CLOSING_CLIENT 4
 
-
-
-
 //defined to say that the system is shuting down
 #define SHUTDOWN -100
 
-
 typedef struct _sub sub;
 
-struct _sub {
+struct _sub
+{
     int pid;
-
 };
-
-
 
 //vai buscar as variaveis de ambiente necessarias
 //se nao existirem vai substituir com os macros apresentados acima

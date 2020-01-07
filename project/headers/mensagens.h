@@ -28,7 +28,7 @@ struct _tpc{
     char nome[50];
 
     //ponteiro para a primeira mensagem
-    msg * primsg, *lastmsg;
+    msg * primsg;
     pthread_mutex_t lock_msg;
 
     //ponteiro para o topico anterior

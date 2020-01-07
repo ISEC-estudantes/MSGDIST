@@ -15,5 +15,6 @@
 
 void readingfifo(void *input);
 
+void exitNow();
 
 #endif //CVRF_H
