@@ -11,7 +11,7 @@
 
 //ALL - GENERIC TPC AND MSG MANAGEMENT
 
-void addtpc(global *info, char *nome)
+tpc addtpc(global *info, char *nome,int id)
 {
 
 
@@ -31,7 +31,8 @@ void addtpc(global *info, char *nome)
 
     if ((aux = getlasttpc(info)) == NULL) {
         info->listtopicos = newtpc;
-        aux->topicid = info->tidcounter = 0;
+        aux->topicid = 0;
+        return *newtpc;
     } else {
         aux->prox = newtpc;
         int id = 0;
@@ -41,11 +42,12 @@ void addtpc(global *info, char *nome)
             wprintw(info->notification, "porque %d topicos?!\nERA SUPOSTO SER UM PEQUENO TRABALHO DE SO!!!!!", INT_MAX);
             wrefresh(info->notification);
             pthread_mutex_unlock(&info->lock_tpc);
-            return;
+            return &(tpc *)NULL;
         }
         newtpc->topicid = --id;
         newtpc->prox = NULL;
         aux->prox = newtpc;
+        return *newtpc;
     }
     pthread_mutex_unlock(&info->lock_tpc);
 }

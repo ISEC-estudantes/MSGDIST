@@ -25,6 +25,7 @@ void readingfifo(void *input)
             wclear(info->notification);
             wprintw(info->notification, "[THREAD_READINGFIFO] new round\n");
             wrefresh(info->notification);
+            
         }
 
         bytes = read(myfifo, (void *) &recebe, sizeof(pipemsg));
@@ -36,14 +37,14 @@ void readingfifo(void *input)
 
         if (recebe.codigo == SHUTDOWN) {
             wclear(info->notification);
-            wprintw(info->notification, "o gestor esta se a desligar, este cliente ira fechar dentro de 10 segundos.");
-            printf("o servidor encerrou.\n");
+            wprintw(info->notification, "[AVISO]o gestor esta se a desligar, este cliente ira fechar dentro de 10 segundos.");
             wrefresh(info->notification);
             sleep(10);
+            printf("o servidor encerrou.\n");
             pthread_cancel(info->threads);
         } else if (recebe.codigo == KICK) {
             wclear(info->notification);
-            wprintw(info->notification, "foste kickado pelo admin, este cliente ira fechar dentro de 10 segundos.");
+            wprintw(info->notification, "[AVISO]foste kickado pelo admin, este cliente ira fechar dentro de 10 segundos.");
             printf("foste kickado pelo admin.\n");
             wrefresh(info->notification);
             sleep(10);
@@ -86,4 +87,8 @@ void terminar(global *info)
     }
 
     exit(255);
+}
+
+msg sendmsg(global * info, char * msg, int tpcid){
+    
 }

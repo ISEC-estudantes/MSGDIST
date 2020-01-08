@@ -73,32 +73,33 @@ void ui(void *input)
             mvwprintw(info->mainwin, i + 2, 1, opcoes[i]);
             //wattroff(info->mainwin, A_REVERSE);
         }
+
         wrefresh(info->mainwin);
         choice = getch();
 
         switch (choice)
         {
-        case 1:
+        case '1':
             escrevermsg(info);
             break;
-        case 2:
+        case '2':
             wclear(info->mainwin);
             wprintw(info->mainwin, "A implementar(pressione uma tecla para continuar...)");
             wrefresh(info->mainwin);
-            getchar();
+            getch();
             break;
-        case 3:
+        case '3':
             wclear(info->mainwin);
             wprintw(info->mainwin, "A implementar(pressione uma tecla para continuar...)");
             wrefresh(info->mainwin);
-            getchar();
+            getch();
             break;
-        case 4:
+        case '4':
             wclear(info->mainwin);
-            wprintw(info->mainwin, "Tem mesmo a certeza?");
+            wprintw(info->mainwin, "\n\n\tTem mesmo a certeza?\n");
             wprintw(info->mainwin, "S - sim     N - nao");
             wrefresh(info->mainwin);
-            choice = tolower(getchar());
+            choice = tolower(getch());
             if (choice == 's')
                 sair = 1;
             break;
@@ -111,7 +112,7 @@ void vertopicos(global *info)
     wclear(info->mainwin);
     wprintw(info->mainwin, "A implementar(pressione uma tecla para continuar...)");
     wrefresh(info->mainwin);
-    getchar();
+    getch();
 }
 
 void escrevermsg(global *info)
@@ -178,7 +179,7 @@ void escrevermsg(global *info)
         wclear(info->mainwin);
         wprintw(info->mainwin, "your choice was: %s", topics[highlight]);
         wrefresh(info->mainwin);
-        getchar();
+        getch();
     }
     else
     {
@@ -225,7 +226,7 @@ void escrevermsg(global *info)
         {
             addtpcui(info);
         }
-        getchar();
+        getch();
     }
 }
 
@@ -235,10 +236,95 @@ void addtpcui(void *input)
     echo();
     char topicname[50];
     wclear(info->mainwin);
-    wprintw(info->mainwin, "Name of topic:\n > ");
+    wprintw(info->mainwin, "Nome do topico:\n > ");
     wgetstr(info->mainwin, topicname);
-
+    //addtpc(info, topicname);
+    newnot(info, "[TOPIC MENU]Topico criado com sucesso.", 0, 0);
+    msgui(info, 0);
     noecho();
+}
+
+msg msgui(global *info, int tpcid)
+{
+    char titulo[50];
+    int keypress, sair = 0, my, mx, i, f, y, x;
+    echo();
+    wclear(info->mainwin);
+    wprintw(info->mainwin, "Nome da mensagem:\n > ");
+    wgetstr(info->mainwin, titulo);
+    wclear(info->mainwin);
+    noecho();
+    getmaxyx(info->mainwin, my, mx);
+    wclear(info->mainwin);
+    if (mx > 100)
+    {
+        for (i = 0; i <= my; i++)
+        {
+            mvwprintw(info->mainwin, i, 100, "|");
+            for (f = 101; f < mx; f++)
+            {
+                mvwprintw(info->mainwin, i, f, "X");
+            }
+        }
+    }
+    cbreak();
+    keypad(info->mainwin, TRUE);
+    
+    wmove(info->mainwin, 0, 0);
+    while (!sair)
+    {
+        wrefresh(info->mainwin);
+        getyx(info->mainwin, y, x);
+        keypress = getch();
+        switch (keypress)
+        {
+        case KEY_DOWN:
+            (y == 10 - 1) ? y = 1 : ++y;
+            move(y, x);
+            break;
+        case KEY_UP:
+            (y == 1) ? y = 10 - 1 : --y;
+            move(y, x);
+            break;
+        case 27:
+        case KEY_RIGHT:
+            (x == 100 - 1) ? x = 1 : ++x;
+            move(y, x);
+            break;
+        case KEY_LEFT:
+            (x == 1) ? x = 100 - 1 : --x;
+            move(y, x);
+            break;
+        case KEY_F(2):
+            sair == 1;
+        default:
+            if (isprint(keypress))
+            {
+                if ((y == 9) && (y == 99))
+                {
+                    wprintw(info->mainwin, "%c", keypress);
+                    move(9, 99);
+                    newnot(info, "[EDITOR]You cant write more than this.", 0, 0);
+                }
+                else if (x >= 100 - 1)
+                {
+                    x = 0, ++y;
+                    move(y, x);
+                    wprintw(info->mainwin, "%c", keypress);
+                    x++;
+                }
+                else
+                {
+                    move(y, x);
+                    wprintw(info->mainwin, "%c", keypress);
+                    ++x;
+                }
+            }
+            break;
+        }
+    }
+    sendmsg();
+    newnot(info, "[MENSANGEM EDITOR]Mensagem enviada.", 0, 0);
 }
 
 void newnot(global *info, char *msg, int nlinhas, int ncolunas)
@@ -267,7 +353,7 @@ void newnot(global *info, char *msg, int nlinhas, int ncolunas)
         if (!notificacoes)
         {
             printf("Sem mem.");
-            exitNow();
+            terminar(info);
         }
         for (int i = 0; i < linhas; ++i)
         {
@@ -275,14 +361,14 @@ void newnot(global *info, char *msg, int nlinhas, int ncolunas)
             if (!notificacoes[i])
             {
                 printf("Sem mem.");
-                exitNow();
+                terminar(info);
             }
             notificacoes[i][0] = '\0';
         }
         isset = 1;
     }
     //6
-    for (int i = nlinhas - 2; i >= 0; --i)
+    for (int i = linhas - 2; i >= 0; --i)
     {
         strcpy(notificacoes[i + 1], notificacoes[i]);
     }
@@ -291,5 +377,7 @@ void newnot(global *info, char *msg, int nlinhas, int ncolunas)
     for (int i = 0; i < linhas; ++i)
     {
         wprintw(info->notification, notificacoes[i]);
+        wmove(info->notification, 1 + getcury(info->notification), 0);
     }
+    wrefresh(info->notification);
 }

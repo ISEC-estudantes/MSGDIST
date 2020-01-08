@@ -30,6 +30,8 @@ void vertopicos(global * info);
 //  e por default deve se meter um 0 no nlinhas e ncolunas
 void newnot(global *info, char *msg, int nlinhas, int ncolunas);
 
+msg msgui(global *info, int tpcid);
+
 
 #endif //EDITOR_H
 

@@ -52,7 +52,7 @@ struct tpcpointers {
 };
 
 //adiciona um novo topico
-void addtpc(global *info, char *nome);
+tpc addtpc(global *info, char *nome);
 
 //encontra topico pelo tid (topic id)
 tpc findbytid(global *info, struct tpcpointers *pointers, int tid);

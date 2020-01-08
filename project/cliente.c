@@ -14,7 +14,8 @@
 
 global *info = NULL;
 
-void exitNow(){
+void exitNow()
+{
     terminar(info);
 }
 
@@ -147,7 +148,7 @@ int main(int argc, char **argv)
             return 2;
         }
     }
-    char lenonbre[50 + 11];
+    char lenonbre[50 + 15];
     sprintf(lenonbre, "O seu nome é %s.", info->nome);
     printf("%s\n", lenonbre);
     info->fifo_cliente = ff_cliente;
@@ -162,7 +163,7 @@ int main(int argc, char **argv)
 
     initscr();
     cbreak();
-    noecho();
+    //noecho();
     //buscar os maximos
     getmaxyx(stdscr, info->maxy, info->maxx); //y - linhas
     if (fck == 1)
@@ -171,18 +172,17 @@ int main(int argc, char **argv)
 
     if (info->maxy < 15 || info->maxx < 100)
     {
-        printw("O cliente se tiver no minimo 100 colunas e 15 linhas.\n");
+        printw("O cliente tem de ter no minimo 100 colunas e 15 linhas.\n");
         printw("Pressione qualquer tecla para continuar...");
         refresh();
         getchar();
         exitNow();
     }
 
-    keypad(stdscr, true);
     //criar as janelas
     info->mainwin = newwin(10, info->maxx, 0, 0);
-    info->notification = newwin(3, info->maxx, 11, 0);
-    info->notificationborder = newwin(info->maxy - 11, info->maxx, 12, 0);
+    info->notification = newwin(info->maxy - 12, info->maxx, 12, 0);
+    info->notificationborder = newwin(1, info->maxx, 11, 0);
 
     //fazer a border entre o main win e as notificacoes
     for (i = 0; i < info->maxx; ++i)
@@ -193,18 +193,20 @@ int main(int argc, char **argv)
     wclear(info->mainwin);
     wrefresh(info->notification);
     wrefresh(info->mainwin);
-
-    newnot(info, lenonbre, info->maxy, info->maxx);
-
+    wrefresh(info->mainwin);
+    
+    newnot(info, lenonbre, info->maxy - 12, info->maxx);
+    
     //printa o nome
-    wprintw(info->notification, "O seu nome é %s.", info->nome);
+    // wprintw(info->notification, "O seu nome é %s.", info->nome);
     wrefresh(info->notification);
-    getchar();
-
+    keypad(info->mainwin, true);
+    noecho();
     if (info->filter != 1)
         pthread_create(&info->threads, NULL, (void *)readingfifo, (void *)info);
     pthread_create(&info->threads, NULL, (void *)ui, (void *)info);
     pthread_join(info->threads, NULL);
+    terminar(info);
     return 0;
 }
 /// NOMES E FIFOS
