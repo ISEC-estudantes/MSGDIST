@@ -51,7 +51,7 @@ struct _global
     cltusr *listclientes;
     pthread_mutex_t lock_cltusr;
 
-    tpc *listtopicos;
+    struct _tpc *listtopicos;
     pthread_mutex_t lock_tpc;
 
     //variaveis globais
@@ -131,10 +131,14 @@ struct _pipemsg
 //maximo numero de topicos
 #define DEF_MAXTOPICS 10
 
-//DEFENITIONS OF CODES
+/////// /////// ///// DEFENITIONS OF CODES /////// ///// ////// //////
 
 //codigo de kick
-#define KICK 5
+#define KICK -5
+
+//  erro generico na comunicacao de fifos
+//nao serve para dizer que existe um problema na ligacao mas sim na mensagem enviada como um numero invalido ou uma mensagem sem sentido
+#define PIPEMSG_ERROR -3
 
 //quando as defenicoes de criacao do cliente sao invalidas(provavelmente por causa do nome)
 #define INVALID_CLIENT_NAME -1
@@ -154,11 +158,16 @@ struct _pipemsg
 //para enviar uma subrescricao
 #define SUBSCRITION 3
 
+//enviado quando um cliente esta a fechar
+#define CLOSING_CLIENT 4
+
 //para enviar uma notificacao
 #define NOTIFICATION 5
 
-//enviado quando um cliente esta a fechar
-#define CLOSING_CLIENT 4
+//addicionar um topico
+#define ADD_TOPIC 6
+
+
 
 //defined to say that the system is shuting down
 #define SHUTDOWN -100

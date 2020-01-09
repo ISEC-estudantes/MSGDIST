@@ -10,14 +10,17 @@
 
 #include "./headers/comand.h"
 #include "./headers/gfrt.h"
+#include "./headers/mensagens.h"
 
 void *cmd(void *input)
 {
     global *info = (global *)input;
     cltusr *aux;
+    tpc *auxtop;
+
     char raw[255], copia[255];
     char *cmd[10] = {}, *endptr;
-    int ncmd = 0, erro = 0, counter;
+    int ncmd = 0, erro = 0, counter, mid;
     long int val;
     pipemsg env;
     printf("Bem vindo a linha de comandos do gestor do msgdist,\n insira help ou h para pedir ajuda e dicas.\n");
@@ -127,11 +130,18 @@ void *cmd(void *input)
             }
             else if (strcmp(cmd[0], "topics") == 0 || strcmp(cmd[0], "ts") == 0)
             {
-                printf("\tEste comando ainda nao esta implementado.\n");
+                //printf("\tEste comando ainda nao esta implementado.\n");
+                auxtop = info->listtopicos;
+                printf("Topicos Criados:\n");
+                while (auxtop)
+                {
+                    printf("%s\n", auxtop->nome);
+                    auxtop = auxtop->prox;
+                }
             }
             else if (strcmp(cmd[0], "msg") == 0)
             {
-                printf("\tEste comando ainda nao esta implementado.\n");
+                listmsgs(info);
             }
             else if (strcmp(cmd[0], "topic") == 0)
             {
@@ -139,7 +149,11 @@ void *cmd(void *input)
             }
             else if (strcmp(cmd[0], "del") == 0)
             {
-                printf("\tEste comando ainda nao esta implementado.\n");
+                listmsgs(info);
+                printf("escreva o message id da mensagem que deseja apagar(numero negativo para cancelar): ");
+                scanf("%d", &mid);
+                if (mid > 0)
+                    removebymid(info, mid);
             }
             else if (strcmp(cmd[0], "kick") == 0)
             {
@@ -195,4 +209,26 @@ void errokick()
     printf("Use o seguinte formato:\n"
            "kick piddocliente\n"
            "pode obter o pid dos clientes com o comando us ou users\n");
+}
+
+//lista todas as mensagens
+void listmsgs(global *info)
+{
+
+    pthread_mutex_lock(&info->lock_tpc);
+    tpc *taux = info->listtopicos;
+    msg *maux = NULL, *mauxant;
+    printf("\nMID    TITULO\n");
+    while (taux)
+    {
+        maux = taux->primsg;
+        mauxant = NULL;
+        while (maux)
+        {
+            printf("%d  %s", maux->msgid, maux->titulo);
+        }
+        taux = taux->prox;
+    }
+    pthread_mutex_unlock(&info->lock_tpc);
+    printf("\n");
 }

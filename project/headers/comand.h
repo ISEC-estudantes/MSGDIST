@@ -17,4 +17,6 @@ void * cmd ( void *input);
 
 void errokick();
 
+void listmsgs(global * info);
+
 #endif //COMAND_H

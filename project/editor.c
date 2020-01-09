@@ -64,7 +64,6 @@ void ui(void *input)
     while (!sair)
     {
         wclear(info->mainwin);
-        wrefresh(info->mainwin);
         //mvwprintw(info->mainwin, 1, 3, "Que deseja fazer?");
         for (i = 0; i < nopcoes; ++i)
         {
@@ -106,11 +105,29 @@ void ui(void *input)
 
 int vertopicos(global *info)
 {
-    int i,choice = -1;
+    int i, choice = -1, ntopicos = 0, opcao, numerotop;
     wclear(info->mainwin);
-    for (i = 0; i < info->ntopicos; ++i)
+    tpc *aux = info->listtopicos;
+    char topics[10][50];
+
+    while (aux)
     {
+        ++ntopicos;
+        sprintf(topics[ntopicos - 1], "%d - %s", ntopicos, aux->nome);
     }
+
+    if (info->ntopicos > 0)
+    {
+        while (aux)
+        {
+            ++numerotop;
+            wprintw(info->mainwin, "%d - %s", numerotop, topics[numerotop - 1]);
+        }
+        wrefresh(info->mainwin);
+        choice = getch();
+        return choice;
+    }
+    wprintw(info->mainwin, "Não existem topicos criados");
     wrefresh(info->mainwin);
     getch();
     return choice;
@@ -120,8 +137,6 @@ int vertopicos(global *info)
 void escrevermsg(global *info)
 {
     wclear(info->mainwin);
-    wrefresh(info->mainwin);
-    info->maxtopics = 10;
     tpc *aux = info->listtopicos;
 
     int ntopicos = 0, i, sair = 0, choice = 0;
@@ -140,18 +155,16 @@ void escrevermsg(global *info)
         sprintf(topics[ntopicos - 1], "%d - %s", ntopicos, aux->nome);
     }
 
-    int highlight = 0;
     if (info->ntopicos > 0)
     {
-        vertopicos(info);
     }
     else
     {
+        wclear(info->mainwin);
         wprintw(info->mainwin, "Não existem topicos quer criar um novo? \n\t(S)im (N)ão");
+        wrefresh(info->mainwin);
+
         int sent = 0, sair = 0;
-        char simnao[2][5];
-        strcpy(simnao[0], "(S)im");
-        strcpy(simnao[1], "(N)ao");
 
         while (!sair)
         {
@@ -188,7 +201,7 @@ int addtpcui(void *input)
     wclear(info->mainwin);
     wprintw(info->mainwin, "Nome do topico:\n > ");
     wgetstr(info->mainwin, topicname);
-    //addtpc(info, topicname);
+    sendtpc(info, topicname);
     newnot(info, "[TOPIC MENU]Topico criado com sucesso.", 0, 0);
     msgui(info, 0);
     noecho();
@@ -210,21 +223,24 @@ msg msgui(global *info, int tpcid)
     keypad(info->mainwin, TRUE);
 
     //getting keys
-    int enter = 0, backspace = 0, f2 = 0, up = 0, down = 0, left = 0, right = 0;
+    //int enter = 0, backspace = 0, f2 = 0, up = 0, down = 0, left = 0, right = 0;
+    /*
     wprintw(info->mainwin, "\nEnter:");
-    enter = wgetch(info->mainwin);
+    const int enter = wgetch(info->mainwin);
     wprintw(info->mainwin, "\nbackspace:");
-    backspace = wgetch(info->mainwin);
+    const int backspace = wgetch(info->mainwin);
     wprintw(info->mainwin, "\nf2:");
-    f2 = wgetch(info->mainwin);
+    const int f2 = wgetch(info->mainwin);
     wprintw(info->mainwin, "\nup:");
-    up = wgetch(info->mainwin);
+    const int up = wgetch(info->mainwin);
     wprintw(info->mainwin, "\ndown:");
-    down = wgetch(info->mainwin);
+    const int down = wgetch(info->mainwin);
     wprintw(info->mainwin, "\nleft:");
-    left = wgetch(info->mainwin);
+    const int left = wgetch(info->mainwin);
     wprintw(info->mainwin, "\nright:");
-    right = wgetch(info->mainwin);
+    const int right = wgetch(info->mainwin);
+    */
+
     wclear(info->mainwin);
     if (mx > 100)
     {
@@ -292,7 +308,21 @@ msg msgui(global *info, int tpcid)
             break;
         }
     }
-    //sendmsg(info);
+    wmove(info->mainwin,0,0);
+    char mensagem[1000];
+    for(i = 0; i< 10;++i)
+        for(f = 0; f< 100;++f)
+            mensagem[i*100 + f] = mvwgetch(info->mainwin,i,f);
+
+    char durchar[10];
+    int duracao;
+    echo();
+    wclear(info->mainwin);
+    wprintw(info->mainwin, "Duracao da mensagem em segundos:\n > ");
+    wgetstr(info->mainwin, durchar);
+    duracao = atoi(durchar);
+    noecho();
+    sendmsg(info, titulo, duracao, mensagem, tpcid);
     newnot(info, "[MENSANGEM EDITOR]Mensagem enviada.", 0, 0);
 }
 
@@ -300,21 +330,29 @@ void newnot(global *info, char *msg, int nlinhas, int ncolunas)
 {
     static pthread_mutex_t nots;
     static int mutexset = 0, isset = 0;
+
+    //inicializa o mutex
     if (mutexset == 0)
     {
         pthread_mutex_init(&nots, NULL);
         mutexset = 1;
     }
+
     static int linhas, colunas;
     static char **notificacoes = NULL;
-    if (nlinhas == -1)
+
+    //liberta a memoria
+    if (nlinhas == -1 && isset == 1)
     {
         for (int i = 0; i < linhas; ++i)
             free(notificacoes[i]);
         free(notificacoes);
+        isset = 0;
         return;
     }
-    if (nlinhas != 0)
+
+    //setup de tudo para utilizacao
+    else if (nlinhas != 0 && isset == 0)
     {
         linhas = nlinhas;
         colunas = ncolunas;
@@ -336,17 +374,27 @@ void newnot(global *info, char *msg, int nlinhas, int ncolunas)
         }
         isset = 1;
     }
-    //6
-    for (int i = linhas - 2; i >= 0; --i)
+    //printa as notificacoes para a area de notificacao
+    if (isset == 1)
     {
-        strcpy(notificacoes[i + 1], notificacoes[i]);
+        pthread_mutex_lock(&nots);
+        //vai muver todas as strings para baixo, apagando a mais antiga e denxando a ultima livre para ser modificada
+        for (int i = linhas - 2; i >= 0; --i)
+        {
+            strcpy(notificacoes[i + 1], notificacoes[i]);
+        }
+
+        //mete a mensagem na primeira
+        strcpy(notificacoes[0], msg);
+        wclear(info->notification);
+
+        //imprime para a zona de notificacoes
+        for (int i = 0; i < linhas; ++i)
+        {
+            wprintw(info->notification, notificacoes[i]);
+            wmove(info->notification, 1 + getcury(info->notification), 0);
+        }
+        wrefresh(info->notification);
+        pthread_mutex_unlock(&nots);
     }
-    strcpy(notificacoes[0], msg);
-    wclear(info->notification);
-    for (int i = 0; i < linhas; ++i)
-    {
-        wprintw(info->notification, notificacoes[i]);
-        wmove(info->notification, 1 + getcury(info->notification), 0);
-    }
-    wrefresh(info->notification);
 }

@@ -19,6 +19,14 @@ void exitNow()
     terminar(info);
 }
 
+//le o newnot
+void pipereadprob(){
+    newnot(info, "[ERROR]O gestor nao conseguiu ler o fifo.\nA desligar em 10 segs.",0,0);
+    sleep(10);
+    terminar(info);
+}
+
+
 void welcome()
 {
     printf(
@@ -159,6 +167,7 @@ int main(int argc, char **argv)
     //////////////// TRATAMENTO DE SINAIS ///////////////////
     signal(SIGINT, exitNow);
     signal(SIGPIPE, exitNow);
+    signal(SIGUSR2, pipereadprob);
     ///////////////////////////////////////////////////////
 
     initscr();

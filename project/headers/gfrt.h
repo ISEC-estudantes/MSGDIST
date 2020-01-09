@@ -32,4 +32,12 @@ char * nomecheck(global *info, char *cliente, int pid);
 //apaga as mensagens quando chega a sua hora de bater as botas
 void timerdeleter(void *input);
 
+
+//faz as verificacoes para adicionar um movo topico e confirmar com o cliente que a enviou
+void addtopic(global *info, pipemsg rcvenv);
+
+//faz as verificacoes para adicionar uma nova mensagens e confirmar com o cliente que a enviou
+void addmensagem(global *info, pipemsg rcvenv);
+
+
 #endif //THREADS_H

@@ -11,12 +11,12 @@
 
 //ALL - GENERIC TPC AND MSG MANAGEMENT
 
-tpc addtpc(global *info, char *nome,int id)
+tpc addtpc(global *info, char *nome, int id)
 {
 
-
     pthread_mutex_lock(&info->lock_tpc);
-    if (info->ntopicos == info->maxtopics) {
+    if (info->ntopicos == info->maxtopics)
+    {
         wclear(info->notification);
         wprintw(info->notification, "Max topicos alcancados.");
         wrefresh(info->notification);
@@ -24,25 +24,30 @@ tpc addtpc(global *info, char *nome,int id)
         return;
     }
     tpc *aux, *newtpc = malloc(sizeof(tpc));
-    if (newtpc == NULL) {
+    if (newtpc == NULL)
+    {
         pthread_cancel(info->threads);
     }
     strcpy(newtpc->nome, nome);
 
-    if ((aux = getlasttpc(info)) == NULL) {
+    if ((aux = getlasttpc(info)) == NULL)
+    {
         info->listtopicos = newtpc;
         aux->topicid = 0;
         return *newtpc;
-    } else {
+    }
+    else
+    {
         aux->prox = newtpc;
         int id = 0;
-        while (verifytid(info, id++) == -1 || id != INT_MAX);
-        if(id == INT_MAX){
+        if (id == INT_MAX)
+        {
             wclear(info->notification);
             wprintw(info->notification, "porque %d topicos?!\nERA SUPOSTO SER UM PEQUENO TRABALHO DE SO!!!!!", INT_MAX);
             wrefresh(info->notification);
             pthread_mutex_unlock(&info->lock_tpc);
-            return &(tpc *)NULL;
+            newtpc->topicid = -1; 
+            return *newtpc;
         }
         newtpc->topicid = --id;
         newtpc->prox = NULL;
@@ -55,13 +60,34 @@ tpc addtpc(global *info, char *nome,int id)
 int verifytid(global *info, int tid)
 {
     tpc *aux = info->listtopicos;
-    if (!aux) {
-        return 0;
-    }
-    while (aux) {
-        if (aux->topicid == tid) {
+    
+    while (aux)
+    {
+        if (aux->topicid == tid)
+        {
             return -1;
         }
+        aux = aux->prox;
+    }
+    return 0;
+}
+
+int verifymid(global *info, int mid)
+{
+    tpc *taux = info->listtopicos;
+    msg *aux = NULL;
+
+    while (taux)
+    {
+        while (aux)
+        {
+            if (aux->msgid == mid)
+            {
+                return -1;
+            }
+            aux = aux->prox;
+        }
+        taux = taux->prox;
     }
     return 0;
 }
@@ -69,10 +95,12 @@ int verifytid(global *info, int tid)
 tpc *getlasttpc(global *info)
 {
     tpc *aux, *proxaux;
-    if (info->listtopicos) {
+    if (info->listtopicos)
+    {
         aux = info->listtopicos;
         proxaux = aux->prox;
-        while (proxaux) {
+        while (proxaux)
+        {
             aux = proxaux;
             proxaux = aux->prox;
         }
@@ -84,10 +112,12 @@ tpc *getlasttpc(global *info)
 msg *getlastmsg(global *info)
 {
     msg *aux, *proxaux;
-    if (info->listtopicos) {
+    if (info->listtopicos)
+    {
         aux = info->listtopicos;
         proxaux = aux->prox;
-        while (proxaux) {
+        while (proxaux)
+        {
             aux = proxaux;
             proxaux = aux->prox;
         }
@@ -98,35 +128,36 @@ msg *getlastmsg(global *info)
 
 int removebytid(global *info, int tid)
 {
-        pthread_mutex_lock(&info->lock_tpc);
+    pthread_mutex_lock(&info->lock_tpc);
 
-    struct tpcpointers pointers ;
+    struct tpcpointers pointers;
     findbytid(info, &pointers, tid);
     //verificar se tem mensagens
-    if (pointers.aux->nmensagens == 0) {
-        
+    if (pointers.aux->nmensagens == 0)
+    {
     }
-        pthread_mutex_unlock(&info->lock_tpc);
-
-
+    pthread_mutex_unlock(&info->lock_tpc);
 }
 
 tpc findbytid(global *info, struct tpcpointers *pointers, int tid)
 {
 
     pointers->aux = pointers->proxaux = pointers->antaux = NULL;
-    if (info->listtopicos) {
+    if (info->listtopicos)
+    {
         if (info->debug == 1)
             printf("[removecliente]listclientes existe\n");
 
         pointers->aux = info->listtopicos;
         pointers->proxaux = pointers->aux->prox;
-        while (pointers->proxaux && tid != pointers->aux->topicid) {
+        while (pointers->proxaux && tid != pointers->aux->topicid)
+        {
             pointers->antaux = pointers->aux;
             pointers->aux = pointers->proxaux;
             pointers->proxaux = pointers->proxaux->prox;
         }
-        if (tid == pointers->aux->topicid) {
+        if (tid == pointers->aux->topicid)
+        {
             return *pointers->aux;
         }
     }
@@ -135,3 +166,35 @@ tpc findbytid(global *info, struct tpcpointers *pointers, int tid)
     return anulado;
 }
 
+//remover uma mensagem pelo o seu id
+void removebymid(global *info, int mid)
+{
+
+    pthread_mutex_lock(&info->lock_tpc);
+    tpc *taux = info->listtopicos;
+    msg *maux = NULL, *mauxant;
+    while (taux)
+    {
+        maux = taux->primsg;
+        mauxant = NULL;
+        while (maux)
+        {
+            if (maux->msgid == mid)
+            {
+                if (mauxant == NULL)
+                {
+                    taux->primsg = maux->prox;
+                }
+                else
+                {
+                    mauxant->prox = maux->prox;
+                }
+                free(maux);
+                pthread_mutex_unlock(&info->lock_tpc);
+                return;
+            }
+        }
+        taux = taux->prox;
+    }
+    pthread_mutex_unlock(&info->lock_tpc);
+}

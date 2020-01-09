@@ -1,7 +1,8 @@
 GESTOROBS = ./project/gestor.o ./project/verificar.o ./project/utils.o ./project/comand.o ./project/gfrt.o ./project/cltusr.o
 GESTOROUT = gestor
 
-CLIENTEOBS = ./project/cliente.o ./project/utils.o ./project/cltusr.o  ./project/editor.o  ./project/cfrt.o
+CLIENTEOBS = ./project/cliente.o ./project/utils.o ./project/cltusr.o  ./project/editor.o  ./project/cfrt.o ./project/mensagem.o
+
 CLIENTEOUT = cliente
 
 CFLAGS += -lncurses -lpthread
@@ -19,7 +20,10 @@ cliente:$(CLIENTEOBS)
 gestor:$(GESTOROBS)
 	$(CC) $(GESTOROBS) -o $(GESTOROUT) $(CFLAGS)
 
-testncurses: ./project/testncurses.c ./project/utils.o ./project/editor.o
+testncurses: ./project/testncurses.c ./project/utils.o ./project/editor.o 
+
+
+
 	$(CC) ./project/testncurses.c ./project/utils.o ./project/editor.o -o testncurses -lncurses -g
 
 %.o:%.c
