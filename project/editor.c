@@ -83,10 +83,7 @@ void ui(void *input)
             escrevermsg(info);
             break;
         case '2':
-            wclear(info->mainwin);
-            wprintw(info->mainwin, "A implementar(pressione uma tecla para continuar...)");
-            wrefresh(info->mainwin);
-            getch();
+            vertopicos(info);
             break;
         case '3':
             wclear(info->mainwin);
@@ -107,18 +104,21 @@ void ui(void *input)
     }
 }
 
-void vertopicos(global *info)
+int vertopicos(global *info)
 {
+    int i,choice = -1;
     wclear(info->mainwin);
-    wprintw(info->mainwin, "A implementar(pressione uma tecla para continuar...)");
+    for (i = 0; i < info->ntopicos; ++i)
+    {
+    }
     wrefresh(info->mainwin);
     getch();
+    return choice;
 }
 
+//funcao para preencher os campos de uma nova mensagem
 void escrevermsg(global *info)
 {
-    //topicos
-    //pthread_mutex_lock(&info->lock_tpc);
     wclear(info->mainwin);
     wrefresh(info->mainwin);
     info->maxtopics = 10;
@@ -136,101 +136,51 @@ void escrevermsg(global *info)
 
     while (aux)
     {
-        --ntopicos;
+        ++ntopicos;
         sprintf(topics[ntopicos - 1], "%d - %s", ntopicos, aux->nome);
     }
 
     int highlight = 0;
     if (info->ntopicos > 0)
     {
-        while (!sair)
-        {
-            for (i = 0; i < 10; ++i)
-            {
-                if (i == highlight)
-                    wattron(info->mainwin, A_REVERSE);
-                mvwprintw(info->mainwin, i + 1, 1, topics[i]);
-                wattroff(info->mainwin, A_REVERSE);
-            }
-            choice = getch();
-            switch (choice)
-            {
-            case ((int)'\n'):
-            case 13:
-            case KEY_ENTER:
-                sair = 1;
-                break;
-            case KEY_UP:
-                --highlight;
-                if (highlight == -1)
-                    highlight = 0;
-                break;
-            case KEY_DOWN:
-                ++highlight;
-                if (highlight == info->maxtopics)
-                    highlight = info->maxtopics - 1;
-                break;
-            default:
-                break;
-            }
-            if (choice == 1)
-                break;
-        }
-        wclear(info->mainwin);
-        wprintw(info->mainwin, "your choice was: %s", topics[highlight]);
-        wrefresh(info->mainwin);
-        getch();
+        vertopicos(info);
     }
     else
     {
-        wprintw(info->mainwin, "nao existem topicos quer criar um novo?");
+        wprintw(info->mainwin, "Não existem topicos quer criar um novo? \n\t(S)im (N)ão");
+        int sent = 0, sair = 0;
         char simnao[2][5];
-        strcpy(simnao[0], "sim");
-        strcpy(simnao[1], "nao");
+        strcpy(simnao[0], "(S)im");
+        strcpy(simnao[1], "(N)ao");
+
         while (!sair)
         {
-
-            for (i = 0; i < 2; ++i)
-            {
-                if (i == highlight)
-                    wattron(info->mainwin, A_REVERSE);
-                mvwprintw(info->mainwin, i + 1, 1, simnao[i]);
-                wattroff(info->mainwin, A_REVERSE);
-            }
-            choice = wgetch(info->mainwin);
+            choice = tolower(wgetch(info->mainwin));
 
             switch (choice)
             {
             case ((int)'\n'):
             case 13:
-            case KEY_ENTER:
+            case 's':
+                addtpcui(info);
                 sair = 1;
                 break;
-            case KEY_UP:
-                --highlight;
-                if (highlight == -1)
-                    highlight = 0;
-                break;
-            case KEY_DOWN:
-                ++highlight;
-                if (highlight == 2)
-                    highlight = 1;
+            case 'n':
+                sair = 1;
                 break;
             default:
-                break;
+                if (sent == 0)
+                {
+                    newnot(info, "[NOVO TOPICO]Digite 's' para criar um novo ou 'n' para voltar ao main menu.", 0, 0);
+                    sent = 1;
+                    break;
+                }
             }
-            if (sair == 1)
-                break;
         }
-        if (highlight == 0)
-        {
-            addtpcui(info);
-        }
-        getch();
     }
 }
 
-void addtpcui(void *input)
+int addtpcui(void *input)
 {
     global *info = (global *)input;
     echo();
@@ -256,6 +206,26 @@ msg msgui(global *info, int tpcid)
     noecho();
     getmaxyx(info->mainwin, my, mx);
     wclear(info->mainwin);
+    cbreak();
+    keypad(info->mainwin, TRUE);
+
+    //getting keys
+    int enter = 0, backspace = 0, f2 = 0, up = 0, down = 0, left = 0, right = 0;
+    wprintw(info->mainwin, "\nEnter:");
+    enter = wgetch(info->mainwin);
+    wprintw(info->mainwin, "\nbackspace:");
+    backspace = wgetch(info->mainwin);
+    wprintw(info->mainwin, "\nf2:");
+    f2 = wgetch(info->mainwin);
+    wprintw(info->mainwin, "\nup:");
+    up = wgetch(info->mainwin);
+    wprintw(info->mainwin, "\ndown:");
+    down = wgetch(info->mainwin);
+    wprintw(info->mainwin, "\nleft:");
+    left = wgetch(info->mainwin);
+    wprintw(info->mainwin, "\nright:");
+    right = wgetch(info->mainwin);
+    wclear(info->mainwin);
     if (mx > 100)
     {
         for (i = 0; i <= my; i++)
@@ -267,15 +237,14 @@ msg msgui(global *info, int tpcid)
             }
         }
     }
-    cbreak();
-    keypad(info->mainwin, TRUE);
-    
+
     wmove(info->mainwin, 0, 0);
     while (!sair)
     {
         wrefresh(info->mainwin);
         getyx(info->mainwin, y, x);
-        keypress = getch();
+        keypress = wgetch(info->mainwin);
+
         switch (keypress)
         {
         case KEY_DOWN:
@@ -296,7 +265,7 @@ msg msgui(global *info, int tpcid)
             move(y, x);
             break;
         case KEY_F(2):
-            sair == 1;
+            sair = 1;
         default:
             if (isprint(keypress))
             {
@@ -323,7 +292,7 @@ msg msgui(global *info, int tpcid)
             break;
         }
     }
-    sendmsg();
+    //sendmsg(info);
     newnot(info, "[MENSANGEM EDITOR]Mensagem enviada.", 0, 0);
 }
 

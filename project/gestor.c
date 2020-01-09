@@ -15,14 +15,14 @@
 
 global *info = NULL;
 
-
 void exitChild()
 {
 
     int erro = 0;
 
     waitpid(info->cpid, &erro, 0);
-    switch (WEXITSTATUS(erro)) {
+    switch (WEXITSTATUS(erro))
+    {
     case 2:
         printf("\nO ficheiro das palavras proibidas não existe\n");
         exit(2);
@@ -42,7 +42,8 @@ void exitChild()
 
 void exitNow()
 {
-    if (info->debug == 1) {
+    if (info->debug == 1)
+    {
         printf("verificar o info --EXITNOW-- \n");
         printf("info->cpid %d", info->cpid);
         printf("end da verifcacao\n");
@@ -78,16 +79,18 @@ int main(int argc, char **argv)
 
     getoption(argc, argv, &filter, &ocmd, &help, &debug);
 
-    if (help == 1) {
+    if (help == 1)
+    {
         fhelp();
         exit(0);
     }
-    
-    if (access(GESTORFIFO, R_OK) != -1) {
+
+    if (access(GESTORFIFO, R_OK) != -1)
+    {
         printf("Um gestor já esta a correr neste diretorio.\n");
         return 5;
     }
-    
+
     char wordsnot[100];
 
     getvars(&maxmsg, &maxnot, wordsnot, &maxtimeout, &maxusers, &maxtopics);
@@ -123,8 +126,8 @@ int main(int argc, char **argv)
     ////////////////////////////////////////////////
     //////////////CRIACAO DAS PIPES/////////////////
 
-    erro = mkfifo(GESTORFIFO, 0666);
-    if (erro == -1) {
+    if ((erro = mkfifo(GESTORFIFO, 0666)) == -1)
+    {
         printf("erro a criar o fifo\n");
         return -2;
     }
@@ -142,15 +145,13 @@ int main(int argc, char **argv)
     ////////////////////////////////////////////////
     //////////////////START TIMER///////////////////
 
-    //pthread_create(&(info->threads), NULL, (void*)msgdeleter, (void*)info);
+    pthread_create(&(info->threads), NULL, (void *)timerdeleter, (void *)info);
 
     /////////////////////////////////////////////////
     ////////////////////COMAND LINE//////////////////
 
-    //msgdeleter(info);
     welcome();
     pthread_create(&(info->threads), NULL, (void *)cmd, (void *)info);
-
 
     ///////////////////////////////////////
     /////////ENCERRAMENTO DE TUDO//////////

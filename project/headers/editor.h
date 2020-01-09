@@ -20,19 +20,17 @@ void ui(void *input);
 void escrevermsg(global *info);
 
 //adiciona um topico
-void addtpcui(void * input);
+int addtpcui(void *input);
 
 //menu para ver os topicos
-void vertopicos(global * info);
+int vertopicos(global *info);
 
 //printar uma nova notificacao
-//  se o nlinhas for defenido ele vai criar as cenas, 
+//  se o nlinhas for defenido ele vai criar as cenas,
 //  e por default deve se meter um 0 no nlinhas e ncolunas
 void newnot(global *info, char *msg, int nlinhas, int ncolunas);
 
+
 msg msgui(global *info, int tpcid);
 
-
 #endif //EDITOR_H
-
-

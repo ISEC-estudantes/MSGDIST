@@ -18,7 +18,7 @@ void readingfifo(void *input)
     char myfifochar[10];
     sprintf(myfifochar, "%d", info->pid);
     int myfifo = info->fifo_cliente, bytes;
-    pipemsg recebe = initpipemsg();
+    pipemsg recebe ;
 
     while (info->terminate != 1) {
         if (info->debug == 1) {
@@ -64,7 +64,6 @@ void terminar(global *info)
     char charpid[10];
     endwin();
 
-
     sprintf(charpid, "%d", getpid());
     unlink(charpid);
     pipemsg envrcb;
@@ -90,5 +89,5 @@ void terminar(global *info)
 }
 
 msg sendmsg(global * info, char * msg, int tpcid){
-    
+        
 }

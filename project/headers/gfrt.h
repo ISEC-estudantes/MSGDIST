@@ -29,4 +29,7 @@ void freethings(global * info);
 //na lista de clientes
 char * nomecheck(global *info, char *cliente, int pid);
 
+//apaga as mensagens quando chega a sua hora de bater as botas
+void timerdeleter(void *input);
+
 #endif //THREADS_H

@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 
         //criar o pipemsg//
 
-        pipemsg envrcb = initpipemsg();
+        pipemsg envrcb ;
 
         envrcb.codigo = ADD_CLIENT;
         strcpy(envrcb.clientname, info->nome);

@@ -20,7 +20,7 @@ void readingfifo(void *input)
     //pthread_t handler_creat;
     global *info = (global *) input;
     int gestorfifo = open(GESTORFIFO, O_RDWR), bytes, lixofifo;
-    pipemsg recebe = initpipemsg();
+    pipemsg recebe ;
     gestorfifo = open(GESTORFIFO, O_RDONLY);
     lixofifo = open(GESTORFIFO, O_WRONLY);
     if (gestorfifo < 0) {
@@ -61,7 +61,7 @@ void addcliente(global *info, pipemsg *recebe)
     int nclts, fd, erro = 0;
     char pidcliente_char[10];
     sprintf(pidcliente_char, "%d", recebe->pid);
-    pipemsg enviar = initpipemsg();
+    pipemsg enviar ;
     pthread_mutex_lock(&info->lock_cltusr);
     nclts = info->nclientes;
     pthread_mutex_unlock(&info->lock_cltusr);
@@ -203,7 +203,7 @@ char *nomecheck(global *info, char *cliente, int pid)
                     if (fd == -1) {
                         kill(pid, SIGINT);
                     } else {
-                        pipemsg enviar = initpipemsg();
+                        pipemsg enviar;
                         enviar.codigo = INVALID_CLIENT_NAME;
                         write(fd, (void *) &enviar, sizeof(pipemsg));
                         close(fd);
@@ -222,7 +222,7 @@ void freethings(global *info)
 {
     char pidchar[10];
     int ff_cliente;
-    pipemsg envrcb = initpipemsg();
+    pipemsg envrcb ;
     envrcb.codigo = SHUTDOWN;
     printf("verificar o info --FREETHINGS-- \n");
     printf("info->cpid %d", info->cpid);

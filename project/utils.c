@@ -138,15 +138,7 @@ global *initinfo()
     return info;
 }
 
-pipemsg initpipemsg()
-{
-    pipemsg a;
-    a.codigo = 0;
-    a.topicid = 0;
-    a.msgid = 0;
-    a.pid = 0;
-    return a;
-}
+
 
 
 
