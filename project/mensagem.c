@@ -13,7 +13,7 @@
 
 tpc addtpc(global *info, char *nome, int id)
 {
-
+    tpc temptpc;
     pthread_mutex_lock(&info->lock_tpc);
     if (info->ntopicos == info->maxtopics)
     {
@@ -21,7 +21,8 @@ tpc addtpc(global *info, char *nome, int id)
         wprintw(info->notification, "Max topicos alcancados.");
         wrefresh(info->notification);
         pthread_mutex_unlock(&info->lock_tpc);
-        return;
+        temptpc.topicid = -1;
+        return temptpc;
     }
     tpc *aux, *newtpc = malloc(sizeof(tpc));
     if (newtpc == NULL)
@@ -46,7 +47,7 @@ tpc addtpc(global *info, char *nome, int id)
             wprintw(info->notification, "porque %d topicos?!\nERA SUPOSTO SER UM PEQUENO TRABALHO DE SO!!!!!", INT_MAX);
             wrefresh(info->notification);
             pthread_mutex_unlock(&info->lock_tpc);
-            newtpc->topicid = -1; 
+            newtpc->topicid = -1;
             return *newtpc;
         }
         newtpc->topicid = --id;
@@ -60,7 +61,7 @@ tpc addtpc(global *info, char *nome, int id)
 int verifytid(global *info, int tid)
 {
     tpc *aux = info->listtopicos;
-    
+
     while (aux)
     {
         if (aux->topicid == tid)
@@ -132,10 +133,7 @@ int removebytid(global *info, int tid)
 
     struct tpcpointers pointers;
     findbytid(info, &pointers, tid);
-    //verificar se tem mensagens
-    if (pointers.aux->nmensagens == 0)
-    {
-    }
+
     pthread_mutex_unlock(&info->lock_tpc);
 }
 
@@ -162,7 +160,7 @@ tpc findbytid(global *info, struct tpcpointers *pointers, int tid)
         }
     }
     tpc anulado;
-    anulado.topicid = 0;
+    anulado.topicid = -1;
     return anulado;
 }
 

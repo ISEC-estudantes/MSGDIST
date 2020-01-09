@@ -222,7 +222,6 @@ void addcliente(global *info, pipemsg *recebe)
             ++(info->nclientes);
         }
     }
-
     pthread_mutex_unlock(&info->lock_cltusr);
     //fim de gestao
 }
@@ -405,6 +404,7 @@ void timerdeleter(void *input)
                         antauxm->prox = auxm->prox;
                     else
                         auxt->primsg = auxm->prox;
+
                     auxm = auxm->prox;
                     --(auxt->nmensagens);
                     free(auxm);

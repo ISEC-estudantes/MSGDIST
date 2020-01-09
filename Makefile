@@ -1,4 +1,4 @@
-GESTOROBS = ./project/gestor.o ./project/verificar.o ./project/utils.o ./project/comand.o ./project/gfrt.o ./project/cltusr.o
+GESTOROBS = ./project/gestor.o ./project/verificar.o ./project/utils.o ./project/comand.o ./project/gfrt.o ./project/cltusr.o ./project/mensagem.o 
 GESTOROUT = gestor
 
 CLIENTEOBS = ./project/cliente.o ./project/utils.o ./project/cltusr.o  ./project/editor.o  ./project/cfrt.o ./project/mensagem.o

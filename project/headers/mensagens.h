@@ -52,7 +52,7 @@ struct tpcpointers
 //adiciona um novo topico
 tpc addtpc(global *info, char *nome, int id);
 
-//encontra topico pelo tid (topic id)
+//encontra topico pelo tid (topic id), retorna -1 no topicid se nao tiver encontrado
 tpc findbytid(global *info, struct tpcpointers *pointers, int tid);
 
 //vai buscar o ultimo topico, se nao existir returna null
@@ -111,9 +111,10 @@ msg *getlastmsg(global *info);
 
 msg sendmsg(global *info, char *titulo,int duracao , char *msg, int tpcid);
 
+//re
 void removebymid(global *info, int mid);
 
-//verifica se existe um id possivel e retorna 0 se encontrar, -1 se encontrar
+//verifica se  o mid 'e possivel e retorna 0 se nao encontrar, -1 se encontrar um igual
 int verifymid(global *info, int mid);
 
 
